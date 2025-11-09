@@ -1,5 +1,14 @@
+import Header from "../components/reusable/Header";
+import Footer from "../components/reusable/Footer";
+
 export default function Product(){
     return(
-        <div>The Product / Article Page</div>
+         <>
+      <Header />
+      <div className="div-center">Product / Article Page</div>
+      <div className="div-center">...</div>
+      <div className="div-center">...</div>
+      <Footer />
+    </>
     )
 }

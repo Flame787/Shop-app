@@ -1,5 +1,14 @@
-export default function Cart(){
-    return(
-        <div>The Cart Page</div>
-    )
+import Header from "../components/reusable/Header";
+import Footer from "../components/reusable/Footer";
+
+export default function Cart() {
+  return (
+    <>
+      <Header />
+      <div className="div-center">The Cart Page</div>
+      <div className="div-center">...</div>
+      <div className="div-center">...</div>
+      <Footer />
+    </>
+  );
 }
