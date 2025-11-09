@@ -1,7 +1,7 @@
 export default function Footer() {
   return (
     <>
-      <div className="div-center">This is footer!</div>
+      <div className="div-center">This is footer...</div>
       <div className="div-center">...</div>
       <div className="div-center">...</div>
       {/* <div>Home page</div> */}

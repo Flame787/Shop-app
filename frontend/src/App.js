@@ -7,9 +7,10 @@ import Account from "./pages/Account";
 import Cart from "./pages/Cart";
 import Delivery from "./pages/Delivery";
 import Payment from "./pages/Payment";
+import Error from "./pages/Error";
 
 const router = createBrowserRouter([
-  { path: "/", element: <Home /> },
+  { path: "/", element: <Home />, errorElement: <Error /> },
   // start frontend server (npm start) -> test that <Home> renders on http://localhost:3000/
   { path: "/products", element: <ProductsList /> },
   // test that <ProductsList> renders on http://localhost:3000/products
