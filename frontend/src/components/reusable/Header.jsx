@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+// import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";  
+// instead Link, we can use NavLink - automatically applies classes to the link, based on its active and pending state
 
 import CompanyTitle from "./CompanyTitle";
 import SearchBox from "./SearchBox";
@@ -12,9 +14,22 @@ export default function Header() {
     <header id="header">
       <div className="header-box">
         <div className="header-top-left header-box-item">
-          <button>
-            <Link to="/">Home</Link>
-          </button>
+          {/* <button>
+            <Link className="link" to="/">Home</Link>
+          </button> */}
+
+          {/* <Link to="/" className="link home-button">
+            Home
+          </Link> */}
+
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              isActive ? "link home-button active-link" : "link home-button"
+            }
+          >
+            Home
+          </NavLink>
 
           <CompanyTitle className="header-box-item" />
         </div>
@@ -27,14 +42,14 @@ export default function Header() {
               <LogInOutButton />
             </li>
             <li>
-              <Link to="/account">
-                <AccountButton />
-              </Link>
+              {/* <Link className="link" to="/account"> */}
+              <AccountButton />
+              {/* </Link> */}
             </li>
             <li>
-              <Link to="/cart">
-                <CartButton />
-              </Link>
+              {/* <Link className="link" to="/cart"> */}
+              <CartButton />
+              {/* </Link> */}
             </li>
           </ul>
         </nav>
