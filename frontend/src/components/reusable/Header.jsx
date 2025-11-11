@@ -1,5 +1,6 @@
 // import { Link } from "react-router-dom";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router-dom";  
+// instead Link, we can use NavLink - automatically applies classes to the link, based on its active and pending state
 
 import CompanyTitle from "./CompanyTitle";
 import SearchBox from "./SearchBox";

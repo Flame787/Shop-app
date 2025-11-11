@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import "./App.css";
 import Home from "./pages/Home";
 import ProductsList from "./pages/ProductsList";
@@ -14,7 +15,10 @@ const router = createBrowserRouter([
   // start frontend server (npm start) -> test that <Home> renders on http://localhost:3000/
   { path: "/products", element: <ProductsList /> },
   // test that <ProductsList> renders on http://localhost:3000/products
+
   { path: "/product", element: <Product /> },
+  { path: "/products/:id", element: <Product /> },   
+  // new, dynamically adding the Product-page for any product - /: is important, then any value can follow
   { path: "/account", element: <Account /> },
   { path: "/cart", element: <Cart /> },
   { path: "/delivery", element: <Delivery /> },
