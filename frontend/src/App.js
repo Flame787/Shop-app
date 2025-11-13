@@ -10,6 +10,10 @@ import Delivery from "./pages/Delivery";
 import Payment from "./pages/Payment";
 import Error from "./pages/Error";
 
+import AdminStats from "./pages/AdminStats";
+import AdminProducts from "./pages/AdminProducts";
+import AdminOrders from "./pages/AdminOrders";
+
 const router = createBrowserRouter([
   { path: "/", element: <Home />, errorElement: <Error /> },
   // start frontend server (npm start) -> test that <Home> renders on http://localhost:3000/
@@ -23,6 +27,11 @@ const router = createBrowserRouter([
   { path: "/cart", element: <Cart /> },
   { path: "/delivery", element: <Delivery /> },
   { path: "/payment", element: <Payment /> },
+
+  // Admin part
+  { path: "/admin", element: <AdminStats /> },
+  { path: "/admin/products", element: <AdminProducts /> },
+  { path: "/admin/orders", element: <AdminOrders /> },
 ]);
 
 function App() {
