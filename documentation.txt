@@ -1,0 +1,33 @@
+Routes for testing:
+- all routes are defined in App.js (with React Router)
+
+1. Shop routes:
+
+http://localhost:3000 - Home.jsx
+http://localhost:3000/account - Account.jsx
+http://localhost:3000/cart - Cart.jsx
+http://localhost:3000/products - ProductsList.jsx
+http://localhost:3000/products/460 - Product.jsx (with ID = 460) -> route contains a dynamic parameter (ID of the product)
+http://localhost:3000/delivery - Delivery.jsx
+http://localhost:3000/payment - Payment.jsx 
+
+
+2. Admin routes:
+
+http://localhost:3000/admin/ - AdminStats.jsx
+http://localhost:3000/admin/products - AdminProducts.jsx
+http://localhost:3000/admin/orders - AdminOrders.jsx
+
+
+3. Error route:
+
+http://localhost:3000/something - Error.jsx (any undefined path after http://localhost:3000/...)
+
+
+Layouts / wrappers:
+
+RootLayout.jsx is wrapping all Shop-routes, and already contains Header.jsx & Footer.jsx (no need to add them to each page).
+AdminLayout.jsx is wrapping all Admin-routes, and already contains AdminHeader.jsx & AdminFooter.jsx.
+
+
+

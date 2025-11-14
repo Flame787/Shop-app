@@ -1,5 +1,6 @@
 import Header from "../components/reusable/Header";
 import Footer from "../components/reusable/Footer";
+// error element is not wrapped with RootLayout, so we need to add Header and Footer here
 
 export default function Error() {
   return (

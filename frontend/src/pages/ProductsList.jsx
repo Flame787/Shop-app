@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 
-import Header from "../components/reusable/Header";
-import Footer from "../components/reusable/Footer";
+// import Header from "../components/reusable/Header";
+// import Footer from "../components/reusable/Footer";
 
 // fetching data from backend, for example - hier hardcoded:
 const PRODUCTS = [
@@ -13,7 +13,7 @@ const PRODUCTS = [
 export default function ProductsList() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className="div-center">Products in one category</div>
       <ul>
         {/* <li className="div-center">
@@ -34,7 +34,7 @@ export default function ProductsList() {
           // creating different links for differents products with different paths
         ))}
       </ul>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
