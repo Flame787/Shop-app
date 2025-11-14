@@ -1,14 +1,14 @@
-import Header from "../components/reusable/Header";
-import Footer from "../components/reusable/Footer";
+// import Header from "../components/reusable/Header";
+// import Footer from "../components/reusable/Footer";
 
 export default function Delivery() {
   return (
     <>
-      <Header />
+      {/* <Header /> */}
       <div className="div-center">Delivery Page</div>
       <div className="div-center">...</div>
       <div className="div-center">...</div>
-      <Footer />
+      {/* <Footer /> */}
     </>
   );
 }
