@@ -3,9 +3,9 @@ import { useParams } from "react-router-dom";
 
 // import Header from "../components/reusable/Header";
 // import Footer from "../components/reusable/Footer";
+import ProductSection from "../components/Product/ProductSection";
 
 export default function Product() {
-
   const params = useParams();
   // params.id;
 
@@ -13,9 +13,10 @@ export default function Product() {
     <>
       {/* <Header /> */}
       <div className="div-center">Product / Article Page</div>
-      <div className="div-center">Product id: {params.id}</div> 
+      <div className="div-center">Product id: {params.id}</div>
       {/* taking product-id from the link (http://localhost:3000/products/1234), and using it to show other product data */}
       <div className="div-center">...</div>
+      <ProductSection />
       {/* <Footer /> */}
     </>
   );
