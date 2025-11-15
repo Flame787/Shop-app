@@ -87,3 +87,7 @@
   box-shadow: 0 0 10px rgba(255, 107, 0, 0.7);
   transform: scale(1.05);
 }
+
+.category-link {
+  background: linear-gradient(145deg, #32770f, #2c2c2c);
+}

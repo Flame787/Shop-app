@@ -30,6 +30,7 @@ export default function ProductsList() {
         {PRODUCTS.map((product) => (
           <li key={product.id}>
             <Link to={`/products/${product.id}`}>{product.title}</Link>
+            {/* -> this shound be moved into CategorySection or deeper into CategoryItems */}
           </li>
           // creating different links for differents products with different paths
         ))}

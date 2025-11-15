@@ -19,14 +19,16 @@ import AdminLayout from "./layouts/AdminLayout";
 
 const router = createBrowserRouter([
 
+  // Routes before the layout-wrappers, with absolute paths (/):
+
   // { path: "/", element: <Home />, errorElement: <Error /> },
   // // start frontend server (npm start) -> test that <Home> renders on http://localhost:3000/
+
   // { path: "/products", element: <ProductsList /> },
   // // test that <ProductsList> renders on http://localhost:3000/products
-
   // { path: "/product", element: <Product /> },
   // { path: "/products/:id", element: <Product /> },
-  // // new, dynamically adding the Product-page for any product - /: is important, then any value can follow
+  // // dynamically adding the Product-page for any product
   // { path: "/account", element: <Account /> },
   // { path: "/cart", element: <Cart /> },
   // { path: "/delivery", element: <Delivery /> },
@@ -37,6 +39,9 @@ const router = createBrowserRouter([
   // { path: "/admin/products", element: <AdminProducts /> },
   // { path: "/admin/orders", element: <AdminOrders /> },
 
+
+  // Relative paths (without /), and with wrappers (layouts):
+
   //Shop layout:
   {
     path: "/",
@@ -46,7 +51,7 @@ const router = createBrowserRouter([
       { index: true, element: <Home /> },
       { path: "products", element: <ProductsList /> },
       { path: "products/:id", element: <Product /> },  
-      // dynamically adding the Product-page for any product by product ID - /: is important, then any value can follow, 
+      // dynamically adding the Product-page for any product, by product ID - /: is important, then any value can follow, 
       // e.g. http://localhost:3000/products/528   <- product ID = 528
       { path: "account", element: <Account /> },
       { path: "cart", element: <Cart /> },
