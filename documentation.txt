@@ -30,4 +30,26 @@ RootLayout.jsx is wrapping all Shop-routes, and already contains Header.jsx & Fo
 AdminLayout.jsx is wrapping all Admin-routes, and already contains AdminHeader.jsx & AdminFooter.jsx.
 
 
+--------------------------------
 
+Product categories:
+
+Desks
+
+Chairs
+
+Lighting
+
+Drinkware
+
+Decorations
+
+Organizers
+
+Mouse Pads
+
+Electronics
+
+Clocks
+
+The Office Tribute
