@@ -34,22 +34,22 @@ AdminLayout.jsx is wrapping all Admin-routes, and already contains AdminHeader.j
 
 Product categories:
 
-Desks
+1 Desks
 
-Chairs
+2 Chairs
 
-Lighting
+3 Organizers
 
-Drinkware
+4 Electronics
 
-Decorations
+5 Clocks
 
-Organizers
+6 Lighting
 
-Mouse Pads
+7 Mouse Pads
 
-Electronics
+8 Drinkware
 
-Clocks
+9 Decorations
 
-The Office Tribute
+10 The Office Tribute / Tribute
