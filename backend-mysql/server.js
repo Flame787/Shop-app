@@ -281,3 +281,63 @@ app.delete("/api/items/:id", async (req, res) => {
     });
   }
 });
+
+// 6th API: GET - get items by category ID
+app.get("/api/items/category/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (isNaN(categoryId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
+      });
+    }
+
+    const pool = await poolPromise;
+    const [rows] = await pool.query(
+      "SELECT * FROM items WHERE category_id = ?",
+      [categoryId]
+    );
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching items by category:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error, try again",
+      error: error.message,
+    });
+  }
+});
+
+/* test 6th API: http://localhost:5000/api/items/category/1 or http://localhost:5000/api/items/category/5 
+- should return list of items as 'data' [] - inside are objects {} - one object {} for each item, with attributes and values (name, price...)
+{
+"success": true,
+"data": [ {}, {}, {}, {}, {} ...]
+}
+*/
+
+// 7th API: GET - get all categories names (for category buttons)
+app.get("/api/categories", async (req, res) => {
+  try {
+    const pool = await poolPromise;
+    const [rows] = await pool.query("SELECT category_id, category_name FROM categories");
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+  } catch (error) {
+    console.error("Error fetching categories:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error, try again",
+      error: error.message,
+    });
+  }
+});

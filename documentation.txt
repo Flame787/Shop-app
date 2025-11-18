@@ -30,4 +30,51 @@ RootLayout.jsx is wrapping all Shop-routes, and already contains Header.jsx & Fo
 AdminLayout.jsx is wrapping all Admin-routes, and already contains AdminHeader.jsx & AdminFooter.jsx.
 
 
+--------------------------------
+
+Product categories:
+
+1 Desks
+
+2 Chairs
+
+3 Organizers
+
+4 Electronics
+
+5 Clocks
+
+6 Lighting
+
+7 Mouse Pads
+
+8 Drinkware
+
+9 Decorations
+
+10 The Office Tribute / Tribute
+
+--------------------------------------------------------------
+
+Passing the prop (selectedCategory):
+
+RootLayout: 
+- setter-function is passed to Header:
+
+<Header onSelectCategory={setSelectedCategory} />
+<Outlet context={{ selectedCategory }}/>
+
+Header:
+- setter-function is passed to CategoriesBox:
+
+export default function Header({ onSelectCategory }) {
+  <CategoriesBox onSelectCategory={onSelectCategory} />
+}
+
+CategoriesBox:
+export default function CategoriesBox({ onSelectCategory }) {
+  <button onClick={() => onSelectCategory(i + 1)}>Category {i+1}</button>
+}
+
+- setter-function is called on click, and is taking value (selected category-button)
 

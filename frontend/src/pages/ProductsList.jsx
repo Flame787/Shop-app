@@ -1,41 +1,36 @@
-import { Link } from "react-router-dom";
-
-// import Header from "../components/reusable/Header";
-// import Footer from "../components/reusable/Footer";
-
-// fetching data from backend, for example - hier hardcoded:
-const PRODUCTS = [
-  { id: "1", title: "Product-1" },
-  { id: "2", title: "Product-2" },
-  { id: "3", title: "Product-3" },
-];
+import { useOutletContext } from "react-router-dom";
+import { useState, useEffect } from "react";
+import CategoryItems from "../components/Category/CategoryItems";
 
 export default function ProductsList() {
+  const { selectedCategory } = useOutletContext();
+
+  // to show a loader while products are loading:
+  const [loading, setLoading] = useState(false);
+
+  console.log("Selected category:", selectedCategory); // test
+
+  useEffect(() => {
+    if (selectedCategory) {
+      setLoading(true);
+      // when category is selected/changed, show loading-spinner (simulates a small loader):
+      const timer = setTimeout(() => setLoading(false), 300);
+      return () => clearTimeout(timer);
+    }
+  }, [selectedCategory]); // dependency - when category changes, this effect rerenders
+
   return (
     <>
       {/* <Header /> */}
-      <div className="div-center">Products in one category</div>
-      <ul>
-        {/* <li className="div-center">
-          <Link to="/products/product-1">Product 1</Link>
-        </li>
-        <li className="div-center">
-          <Link to="/products/product-2">Product 2</Link>
-        </li>
-        <li className="div-center">
-          <Link to="/products/product-3">Product 3</Link>
-        </li> */}
+      <div className="div-center">Products in this category:</div>
 
-        {/* Instead hardcoded links - getting the list of products dynamically, by mapping through the list: */}
-        {PRODUCTS.map((product) => (
-          <li key={product.id}>
-            <Link to={`/products/${product.id}`}>{product.title}</Link>
-            {/* -> this shound be moved into CategorySection or deeper into CategoryItems */}
-          </li>
-          // creating different links for differents products with different paths
-        ))}
-      </ul>
-      {/* <Footer /> */}
+      {loading ? (
+        <div className="loader"></div>
+      ) : selectedCategory ? (
+        <CategoryItems categoryId={selectedCategory} />
+      ) : (
+        <p className="div-center">Please select a category above.</p>
+      )}
     </>
   );
 }
