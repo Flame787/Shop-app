@@ -1,5 +1,5 @@
 // import { Link } from "react-router-dom";
-import { NavLink } from "react-router-dom";  
+import { NavLink } from "react-router-dom";
 // instead Link, we can use NavLink - automatically applies classes to the link, based on its active and pending state
 
 import CompanyTitle from "./CompanyTitle";
@@ -9,7 +9,8 @@ import AccountButton from "../LoginAccount/AccountButton";
 import CartButton from "../Cart/CartButton";
 import CategoriesBox from "../Category/CategoriesBox";
 
-export default function Header() {
+export default function Header({ onSelectCategory }) {
+  // middleman, just passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to parent
   return (
     <header id="header">
       <div className="header-box">
@@ -56,7 +57,8 @@ export default function Header() {
       </div>
 
       <div className="header-box">{/* categories picker */}</div>
-      <CategoriesBox />
+      <CategoriesBox onSelectCategory={onSelectCategory} />
+        {/* passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to the parent */}
     </header>
   );
 }
