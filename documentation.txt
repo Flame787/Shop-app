@@ -77,3 +77,4 @@ export default function CategoriesBox({ onSelectCategory }) {
 }
 
 - setter-function is called on click, and is taking value (selected category-button)
+

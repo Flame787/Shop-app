@@ -9,7 +9,7 @@ import AccountButton from "../LoginAccount/AccountButton";
 import CartButton from "../Cart/CartButton";
 import CategoriesBox from "../Category/CategoriesBox";
 
-export default function Header({ onSelectCategory }) {
+export default function Header({ onSelectCategory, selectedCategory }) {
   // middleman, just passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to parent
   return (
     <header id="header">
@@ -57,7 +57,7 @@ export default function Header({ onSelectCategory }) {
       </div>
 
       <div className="header-box">{/* categories picker */}</div>
-      <CategoriesBox onSelectCategory={onSelectCategory} />
+      <CategoriesBox onSelectCategory={onSelectCategory}  selectedCategory={selectedCategory} />
         {/* passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to the parent */}
     </header>
   );

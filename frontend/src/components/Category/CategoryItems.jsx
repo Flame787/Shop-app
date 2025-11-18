@@ -10,7 +10,7 @@ export default function CategoryItems({ categoryId }) {
 
     const fetchItems = async () => {
       try {
-        // const res = await axios.get(`/api/items/category/${categoryId}`);  
+        // const res = await axios.get(`/api/items/category/${categoryId}`);
         // -> cross-origin issue, fetching from http://localhost:5000/api/items/category/1 to http://localhost:3000/products
         const res = await axios.get(
           `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`
@@ -24,6 +24,10 @@ export default function CategoryItems({ categoryId }) {
     if (categoryId) fetchItems();
   }, [categoryId]);
 
+  if (items.length === 0) {
+    return <p className="div-center">No items in this category</p>;
+  }
+
   return (
     <div className="item-grid">
       {items.map((item) => (
@@ -34,7 +38,7 @@ export default function CategoryItems({ categoryId }) {
           price={item.price}
           discountPrice={item.discount_price}
           quantity={item.quantity_in_stock}
-          picture={item.picture}
+          picture={item.picture_url}
           category={item.category_id}
           tags={item.tags}
           className="item-card"

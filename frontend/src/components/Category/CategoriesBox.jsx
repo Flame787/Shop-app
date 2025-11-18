@@ -1,45 +1,81 @@
-// import { useState } from "react";
+import axios from "axios";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
-export default function CategoriesBox({ onSelectCategory }) {
+export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
   // accepting one prop - { onSelectCategory } - function, passed from the Parent
 
-  // const [selectedCategory, setSelectedCategory] = useState();
+  // needed for saving state on existing product-categories:
+  const [categories, setCategories] = useState([]);
 
-  // const handleCategoryClick = (categoryId) => {
-  //   setSelectedCategory(categoryId);
-  // };
+  // when a category is selected, navigating to this page: http://localhost:3000/products
+  const navigate = useNavigate();
+
+  // side-effect for fetching category-names:
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.REACT_APP_API_URL}/api/categories`
+        );
+        setCategories(res.data.data);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+
+    fetchCategories();
+  }, []);
 
   return (
     <>
       <div>
         <div className="div-center">Select a category:</div>
         <div className="categories button-list">
-          {/* <button className="link category-link" onClick={() => handleCategoryClick(1)}>Category 1</button>
+          {/* 
+          <button className="link category-link" onClick={() => handleCategoryClick(1)}>Category 1</button>
           <button className="link category-link" onClick={() => handleCategoryClick(2)}>Category 2</button>
           <button className="link category-link" onClick={() => handleCategoryClick(3)}>Category 3</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(4)}>Category 4</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(5)}>Category 5</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(6)}>Category 6</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(7)}>Category 7</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(8)}>Category 8</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(9)}>Category 9</button>
-          <button className="link category-link" onClick={() => handleCategoryClick(10)}>Category 10</button> */}
+        // etc. */}
 
-          {[...Array(10)].map((_, i) => (
-            <button
-              key={i + 1}
-              className="link category-link"
-              onClick={() => {
-                console.log("Clicked category:", i + 1);
-                onSelectCategory(i + 1);
-              }}
-            >
-              {/* {i + 1} - gives values from 1 to 10 - generates 10 buttons (1-10) */}
-              {/* on click - passing a value to the onSelectCategory()-function, which was forwarded as a setter-function 
+          {/* {[...Array(10)].map((_, i) => {
+            const categoryId = i + 1;
+            const isActive = selectedCategory === categoryId; */}
+
+          {categories.length === 0 ? (
+            <p className="div-center">No categories available</p>
+          ) : (
+            categories.map((categ) => {
+              const isActive = selectedCategory === categ.category_id;
+
+              return (
+                <button
+                  // key={i + 1}
+                  key={categ.category_id}
+                  // className="link category-link"
+                  className={`link category-link ${
+                    isActive ? "active-link" : ""
+                  }`}
+                  onClick={() => {
+                    // console.log("Clicked category:", i + 1);   // - older version, for Array
+                    console.log("Clicked category:", categ.category_id);
+                    // onSelectCategory(i + 1);     // - older version, for Array
+                    onSelectCategory(categ.category_id);
+                    // on click - calling the onSelectCategory()-function & passing an argument
+                    navigate("/products");
+                    // on category select - navigate to the Products page: http://localhost:3000/products
+                  }}
+                >
+                  {/* {i + 1} - gives values from 1 to 10 - generates 10 buttons (1-10) */}
+                  {/* on click - passing a value to the onSelectCategory()-function, which was forwarded as a setter-function 
               from RootLayout wrapper via Header-component - and now we are lifting the state up to the parent */}
-              Category {i + 1}
-            </button>
-          ))}
+
+                  {/* Category {categoryId}    // - older version, for Array  */}
+                  {categ.category_name}
+                </button>
+              );
+            })
+          )}
         </div>
       </div>
     </>
