@@ -27,7 +27,7 @@ export default function ItemCard({
   return (
     <section className={className}>
       <div className="item-image">
-        <img src={picture} alt={name} />
+        <img src={picture} alt={name} className="product-image" />
       </div>
       <div className="item-info">
         <h3 className="item-name">{name}</h3>
