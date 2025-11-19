@@ -29,7 +29,7 @@ export default function CategoryItems({ categoryId }) {
   }
 
   return (
-    <div className="item-grid">
+    <div className="div-center category-items-div">
       {items.map((item) => (
         <ItemCard
           key={item.item_id}
