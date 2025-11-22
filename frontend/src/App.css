@@ -193,6 +193,8 @@
 /* ItemCard styling */
 
 .item-card {
+    display: flex;
+  flex-direction: column;
   border-radius: 8px;
   padding: 12px;
   width: 250px;
@@ -200,7 +202,7 @@
   background: #fff;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   margin: 2%;
-  height: 430px;
+  height: 460px;
 }
 
 .item-name {
@@ -234,7 +236,7 @@
 
 .item-quantity {
   font-size: 0.85rem;
-  color: #333;
+  color: #555;
 }
 
 .item-tags {
@@ -268,6 +270,62 @@
   100% {
     transform: rotate(360deg);
   }
+}
+
+/* Quantity selector in ItemCard: */
+.quantity-selector {
+  margin: 8px 0;
+  display: flex;
+   align-items: center;
+   justify-content: center;
+  /* flex-direction: column; */
+  gap: 8px;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.quantity-box {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.qty-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.qty-value {
+  display: inline-block;
+  /* min-width: 10px; */
+  text-align: center;
+  font-size: 1rem;
+  padding: 1px 4px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.buy-button{
+  cursor: pointer;
+}
+
+.item-info {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  height: 100%;
+}
+
+.item-bottom {
+  margin-top: auto;      
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
 }
 
 /* selected category button is active: */
@@ -317,6 +375,8 @@
   object-fit: contain;
   border-radius: 8px;
 }
+
+
 
 @media (max-width: 1465px) {
   .categories,
