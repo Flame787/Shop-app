@@ -6,14 +6,17 @@ export default function CartButton() {
     // <Link to="/cart" className="link cart-button">
     //   Cart
     // </Link>
-
-    <NavLink
-      to="/cart"
-      className={({ isActive }) =>
-        isActive ? "link cart-button active-link" : "link cart-button"
-      }
-    >
-      Cart
-    </NavLink>
+    <div>
+      <NavLink
+        to="/cart"
+        className={({ isActive }) =>
+          isActive
+            ? "link cart-button button-text active-link"
+            : "link button-text cart-button"
+        }
+      >
+        Cart
+      </NavLink>
+    </div>
   );
 }

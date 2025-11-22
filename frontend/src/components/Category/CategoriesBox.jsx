@@ -30,7 +30,7 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
   return (
     <>
       <div>
-        <div className="div-center">Select a category:</div>
+        <div className="div-center all-text margin-bottom">Select a category:</div>
         <div className="categories button-list">
           {/* 
           <button className="link category-link" onClick={() => handleCategoryClick(1)}>Category 1</button>
@@ -53,7 +53,7 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
                   // key={i + 1}
                   key={categ.category_id}
                   // className="link category-link"
-                  className={`link category-link ${
+                  className={`link category-link all-text ${
                     isActive ? "active-link" : ""
                   }`}
                   onClick={() => {

@@ -2,9 +2,22 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  font-family: "Questrial", sans-serif;
 }
 
-#header,
+.all-text {
+  font-family: "Questrial", sans-serif;
+}
+
+.button-text {
+  font-family: "Questrial", sans-serif;
+  letter-spacing: 0.7px;
+}
+
+.title-text {
+  font-family: "League Spartan", sans-serif;
+}
+
 .header-box,
 .company-title,
 .account-div,
@@ -16,12 +29,14 @@
 }
 
 #header {
+  display: flex;
+  align-items: center;
   justify-content: center;
   flex-direction: column;
 }
 
 .header-box {
-  justify-content: space-around;
+  /* justify-content: space-around; */
   flex-direction: row;
   gap: 5%;
   margin-top: 1.5%;
@@ -50,7 +65,7 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
-  margin: 2%;
+  /* margin: 2%; */
 }
 
 .flex-column {
@@ -102,6 +117,21 @@
   color: #e6991d; /* orange hover effect */
 }
 
+.margin-bottom {
+  margin-bottom: 8px;
+}
+
+.input-search {
+  width: 170px;
+  height: 25px;
+  border-radius: 6px;
+  padding: 4px;
+}
+
+.products-category {
+  margin: 20px;
+}
+
 /* ItemCard styling */
 
 .item-card {
@@ -124,7 +154,7 @@
 } */
 
 .item-name {
-  font-size: 1.1rem;
+  font-size: 1rem;
   margin: 8px 0;
 }
 
@@ -203,6 +233,8 @@
   background: linear-gradient(145deg, #d3e1d5, #2c2c2c); */
   background: linear-gradient(145deg, #f6f6f6, #f5f3f3);
   border-width: 0;
+  width: 115px;
+  font-weight: 100;
 }
 
 .category-link.active-link {
@@ -250,6 +282,21 @@
   }
   .link {
     font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 900px) {
+  /* #header {
+    align-items: center;
+  } */
+  .header-box {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .search-box {
+    margin-top: 30px;
+    margin-bottom: 35px;
   }
 }
 

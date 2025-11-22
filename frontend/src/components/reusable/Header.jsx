@@ -23,14 +23,18 @@ export default function Header({ onSelectCategory, selectedCategory }) {
             Home
           </Link> */}
 
-          <NavLink
-            to="/"
-            className={({ isActive }) =>
-              isActive ? "link home-button active-link" : "link home-button"
-            }
-          >
-            Home
-          </NavLink>
+          <div>
+            <NavLink
+              to="/"
+              className={({ isActive }) =>
+                isActive
+                  ? "link home-button button-text active-link"
+                  : "link home-button button-text"
+              }
+            >
+              Home
+            </NavLink>
+          </div>
 
           <CompanyTitle className="header-box-item" />
         </div>
@@ -57,8 +61,11 @@ export default function Header({ onSelectCategory, selectedCategory }) {
       </div>
 
       <div className="header-box">{/* categories picker */}</div>
-      <CategoriesBox onSelectCategory={onSelectCategory}  selectedCategory={selectedCategory} />
-        {/* passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to the parent */}
+      <CategoriesBox
+        onSelectCategory={onSelectCategory}
+        selectedCategory={selectedCategory}
+      />
+      {/* passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to the parent */}
     </header>
   );
 }
