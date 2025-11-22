@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 // import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 // instead Link, we can use NavLink - automatically applies classes to the link, based on its active and pending state
@@ -10,57 +11,71 @@ import CartButton from "../Cart/CartButton";
 import CategoriesBox from "../Category/CategoriesBox";
 
 export default function Header({ onSelectCategory, selectedCategory }) {
-  // middleman, just passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to parent
+  // Header-komponent is just a middleman, passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper 
+  // -> lifting the state up to parent-component
+
+  useEffect(() => {
+    let lastScrollTop = 0;
+    const navbar = document.querySelector(".navbar");
+
+    const handleScroll = () => {
+      const scrollTop =
+        window.pageYOffset || document.documentElement.scrollTop;
+
+      if (scrollTop > lastScrollTop) {
+        // Scroll down - hide navbar:
+        navbar.classList.add("navbar-hidden");
+      } else {
+        // Scroll up - show navbar:
+        navbar.classList.remove("navbar-hidden");
+      }
+      lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+    };
+
+    window.addEventListener("scroll", handleScroll);
+
+    // cleanup:
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []); // [] - effect starts only when component mounts
+
   return (
     <header id="header">
-      <div className="header-box">
-        <div className="header-top-left header-box-item">
-          {/* <button>
-            <Link className="link" to="/">Home</Link>
-          </button> */}
-
-          {/* <Link to="/" className="link home-button">
+      <div className="header-box navbar">
+        <div className="header-box-item header-top-left">
+          <NavLink
+            to="/"
+            className={({ isActive }) =>
+              isActive
+                ? "link home-button button-text active-link"
+                : "link home-button button-text"
+            }
+          >
             Home
-          </Link> */}
-
-          <div>
-            <NavLink
-              to="/"
-              className={({ isActive }) =>
-                isActive
-                  ? "link home-button button-text active-link"
-                  : "link home-button button-text"
-              }
-            >
-              Home
-            </NavLink>
-          </div>
-
-          <CompanyTitle className="header-box-item" />
+          </NavLink>
+        </div>
+        <div className="header-top-center">
+          <CompanyTitle className="header-box-item company-title1" />
         </div>
 
-        <SearchBox />
+        <div className="header-box-item header-top-right categories-buttons div-center">
+          <LogInOutButton />
 
-        <nav className="login-account-navigation header-box-item">
-          <ul className="button-list">
-            <li>
-              <LogInOutButton />
-            </li>
-            <li>
-              {/* <Link className="link" to="/account"> */}
-              <AccountButton />
-              {/* </Link> */}
-            </li>
-            <li>
-              {/* <Link className="link" to="/cart"> */}
-              <CartButton />
-              {/* </Link> */}
-            </li>
-          </ul>
-        </nav>
+          <AccountButton />
+
+          <CartButton />
+        </div>
       </div>
 
-      <div className="header-box">{/* categories picker */}</div>
+      {/* this company-image is showing only on small resolutions, below navbar, instead of big company image in navbar centre: */}
+      <div className="header-top-center-small">
+        <CompanyTitle className="header-box-item company-title2" />
+      </div>
+
+      <SearchBox />
+
+      {/* <div className="header-box"></div> */}
       <CategoriesBox
         onSelectCategory={onSelectCategory}
         selectedCategory={selectedCategory}

@@ -29,7 +29,7 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
 
   return (
     <>
-      <div>
+      <div className="categories-box">
         <div className="div-center all-text margin-bottom">Select a category:</div>
         <div className="categories button-list">
           {/* 

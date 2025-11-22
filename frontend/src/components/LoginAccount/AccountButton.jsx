@@ -1,3 +1,5 @@
+// Sign up (Create account) / My Account button
+
 // import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 
@@ -15,7 +17,7 @@ export default function AccountButton() {
         isActive ? "link account-button button-text active-link" : "link account-button button-text"
       }
     >
-      Create account
+      Sign up
     </NavLink></div>
   );
 }
