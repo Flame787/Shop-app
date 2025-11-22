@@ -22,7 +22,7 @@ export default function ProductsList() {
   return (
     <>
       {/* <Header /> */}
-      <div className="div-center">Products in this category:</div>
+      <div className="div-center products-category">Products in this category:</div>
 
       {loading ? (
         <div className="loader"></div>
