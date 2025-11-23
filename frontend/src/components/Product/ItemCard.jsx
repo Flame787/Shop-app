@@ -10,6 +10,7 @@ export default function ItemCard({
   category,
   tags,
   className,
+  onClick,
 }) {
   // State for quantity-button:
   const [qty, setQty] = useState(1);
@@ -25,7 +26,7 @@ export default function ItemCard({
     numericDiscount !== null && numericDiscount < numericPrice;
 
   return (
-    <section className={className}>
+    <section className={className} onClick={onClick}>
       <div className="item-image">
         <img src={picture} alt={name} className="product-image" />
       </div>

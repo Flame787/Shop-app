@@ -15,7 +15,10 @@ export default function ProductsList() {
       </div>
 
       {selectedCategory ? (
-        <CategoryItems categoryId={selectedCategory} />
+        <CategoryItems
+          categoryId={selectedCategory}
+          onItemSelected={(id) => console.log("Parent has recieved id:", id)}
+        />
       ) : (
         <p className="div-center">Please select a category above.</p>
       )}

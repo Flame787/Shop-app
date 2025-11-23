@@ -119,6 +119,41 @@ ProductsList-page:
 
   const { selectedCategory } = useOutletContext();
 
-  
+-----------------------------------------------------------
+
+Clicking on specific ItemCard and passing it's ID:
+
+
+ProductsList.jsx: 
+
+- adds prop 'onItemSelected' to it's child-component <CategoryItems>, the prop is containing 'id' (of the selected product)
+
+CategoryItems.jsx
+
+- accepts prop 'onItemSelected' from the parent ProductsList-page, and tracks state for 'ItemCardClicked':
+
+  const [ItemCardClicked, setItemCardClicked] = useState(null);
+
+  function handleItemCardClick(itemId) {
+    setItemCardClicked(itemId);
+    console.log("Clicked product id:", itemId);
+    if (onItemSelected) {
+      onItemSelected(itemId); // sending ID to the parent-component
+    }
+  }
+
+  <ItemCard /other props.../  onClick={() => handleItemCardClick(item.item_id)}>
+  // taking itemId of the clicked ItemCard as argument & setting it to the state 'ItemCardClicked', just passing function, not calling it
+
+ItemCard.jsx
+
+- adding onClick prop to the props list:
+export default function ItemCard({name, description, price, discountPrice, quantity, picture, category, tags, className, onClick })
+
+- adding onClick prop to the whole section - reacting when the whole section, wrapping element / the card is clicked:
+ return (
+    <section className={className} onClick={onClick}>
+      <div className="item-image">
+  ...)
 
 
