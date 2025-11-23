@@ -157,3 +157,10 @@ export default function ItemCard({name, description, price, discountPrice, quant
   ...)
 
 
+---------------------------------------------------------------------------------------------------------------------------
+
+*** use React Query for server state (data fetched from API)
+- advantages: caching, refetching, loading/error state out‑of‑the‑box.
+
+*** use Redux Toolkit for: global state (user session, cart, UI state)
+- advantages: centralized store, easy data sharing between components
