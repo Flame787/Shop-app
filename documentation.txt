@@ -157,3 +157,21 @@ export default function ItemCard({name, description, price, discountPrice, quant
   ...)
 
 
+---------------------------------------------------------------------------------------------------------------------------
+
+*** using React Query / Tanstack for server state (data fetched from API)
+- advantages: caching, refetching, loading/error state out‑of‑the‑box.
+
+Product.jsx
+
+-
+
+CategoryItems.jsx
+
+-
+
+
+----------------------------------------------------------------------------------------------------------------------------
+
+*** using Redux Toolkit for: global state (user session, cart, UI state)
+- advantages: centralized store, easy data sharing between components

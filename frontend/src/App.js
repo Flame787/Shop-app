@@ -1,4 +1,5 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
 import "./App.css";
 import Home from "./pages/Home";
@@ -18,7 +19,6 @@ import RootLayout from "./layouts/RootLayout";
 import AdminLayout from "./layouts/AdminLayout";
 
 const router = createBrowserRouter([
-
   // Routes before the layout-wrappers, with absolute paths (/):
 
   // { path: "/", element: <Home />, errorElement: <Error /> },
@@ -39,7 +39,6 @@ const router = createBrowserRouter([
   // { path: "/admin/products", element: <AdminProducts /> },
   // { path: "/admin/orders", element: <AdminOrders /> },
 
-
   // Relative paths (without /), and with wrappers (layouts):
 
   //Shop layout:
@@ -50,8 +49,8 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: "products", element: <ProductsList /> },
-      { path: "products/:id", element: <Product /> },  
-      // dynamically adding the Product-page for any product, by product ID - /: is important, then any value can follow, 
+      { path: "products/:id", element: <Product /> },
+      // dynamically adding the Product-page for any product, by product ID - /: is important, then any value can follow,
       // e.g. http://localhost:3000/products/528   <- product ID = 528
       { path: "account", element: <Account /> },
       { path: "cart", element: <Cart /> },
@@ -72,8 +71,15 @@ const router = createBrowserRouter([
   },
 ]);
 
+// adding React Query - wrapping the Provider arround router (containing all pages):
+const queryClient = new QueryClient();
+
 function App() {
-  return <RouterProvider router={router} />;
+  return (
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>
+  );
 }
 
 export default App;

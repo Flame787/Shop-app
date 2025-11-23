@@ -72,7 +72,7 @@ app.get("/api/items/:id", async (req, res) => {
       });
     }
 
-    console.log(rows[0]);
+    console.log(rows[0]);   // will write full product-object (based on selected ID) in backend console
 
     res.status(200).json({
       success: true,
