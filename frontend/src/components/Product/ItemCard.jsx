@@ -1,10 +1,3 @@
-// import ItemTitle from "./ItemTitle";
-// import ItemPicture from "./ItemPicture";
-// import ItemDescription from "./ItemDescription";
-// import ItemTags from "./ItemTags";
-// import ItemPrice from "./ItemPrice";
-// import ItemQuantity from "./ItemQuantity";
-
 import { useState } from "react";
 
 export default function ItemCard({
@@ -17,6 +10,7 @@ export default function ItemCard({
   category,
   tags,
   className,
+  onClick,
 }) {
   // State for quantity-button:
   const [qty, setQty] = useState(1);
@@ -32,7 +26,7 @@ export default function ItemCard({
     numericDiscount !== null && numericDiscount < numericPrice;
 
   return (
-    <section className={className}>
+    <section className={className} onClick={onClick}>
       <div className="item-image">
         <img src={picture} alt={name} className="product-image" />
       </div>
@@ -84,7 +78,7 @@ export default function ItemCard({
             </div>
           </div>
 
-          <button className="link buy-button">Add to Cart</button>
+          <button className="link buy-button button-text">Add to Cart</button>
         </div>
 
         {/* <p className="item-category">Category: {category}</p> */}

@@ -11,7 +11,7 @@
 
 .button-text {
   font-family: "Questrial", sans-serif;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.8px;
 }
 
 .title-text {
@@ -193,7 +193,7 @@
 /* ItemCard styling */
 
 .item-card {
-    display: flex;
+  display: flex;
   flex-direction: column;
   border-radius: 8px;
   padding: 12px;
@@ -203,6 +203,7 @@
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
   margin: 2%;
   height: 460px;
+  cursor: pointer;
 }
 
 .item-name {
@@ -276,8 +277,8 @@
 .quantity-selector {
   margin: 8px 0;
   display: flex;
-   align-items: center;
-   justify-content: center;
+  align-items: center;
+  justify-content: center;
   /* flex-direction: column; */
   gap: 8px;
   font-size: 0.9rem;
@@ -310,7 +311,7 @@
   border-radius: 6px;
 }
 
-.buy-button{
+.buy-button {
   cursor: pointer;
 }
 
@@ -322,7 +323,7 @@
 }
 
 .item-bottom {
-  margin-top: auto;      
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -375,8 +376,6 @@
   object-fit: contain;
   border-radius: 8px;
 }
-
-
 
 @media (max-width: 1465px) {
   .categories,

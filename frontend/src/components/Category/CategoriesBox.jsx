@@ -11,7 +11,7 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
   // when a category is selected, navigating to this page: http://localhost:3000/products
   const navigate = useNavigate();
 
-  // side-effect for fetching category-names:
+  // side-effect for fetching all categories-names from backend:
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -23,14 +23,16 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
         console.error("Error fetching categories:", err);
       }
     };
-
+    // calling the fetch-function:
     fetchCategories();
   }, []);
 
   return (
     <>
       <div className="categories-box">
-        <div className="div-center all-text margin-bottom">Select a category:</div>
+        <div className="div-center all-text margin-bottom">
+          Select a category:
+        </div>
         <div className="categories button-list">
           {/* 
           <button className="link category-link" onClick={() => handleCategoryClick(1)}>Category 1</button>
@@ -59,7 +61,7 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
                   onClick={() => {
                     // console.log("Clicked category:", i + 1);   // - older version, for Array
                     console.log("Clicked category:", categ.category_id);
-                    // onSelectCategory(i + 1);     // - older version, for Array
+                    // onSelectCategory(i + 1);     // - older version, for Array with categories numbers
                     onSelectCategory(categ.category_id);
                     // on click - calling the onSelectCategory()-function & passing an argument
                     navigate("/products");

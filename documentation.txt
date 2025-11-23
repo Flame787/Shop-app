@@ -26,8 +26,9 @@ http://localhost:3000/something - Error.jsx (any undefined path after http://loc
 
 Layouts / wrappers:
 
-RootLayout.jsx is wrapping all Shop-routes, and already contains Header.jsx & Footer.jsx (no need to add them to each page).
-AdminLayout.jsx is wrapping all Admin-routes, and already contains AdminHeader.jsx & AdminFooter.jsx.
+RootLayout.jsx - wrapping all Shop-routes, and already contains Header.jsx & Footer.jsx (no need to add them to each page).
+
+AdminLayout.jsx - wrapping all Admin-routes, and already contains AdminHeader.jsx & AdminFooter.jsx.
 
 
 --------------------------------
@@ -58,23 +59,101 @@ Product categories:
 
 Passing the prop (selectedCategory):
 
-RootLayout: 
-- setter-function is passed to Header:
+1. RootLayout:
+
+const [selectedCategory, setSelectedCategory] = useState(null);
+
+- setter-function 'setSelectedCategory'-state is passed to Header.jsx (= child-component of RootLayout):
 
 <Header onSelectCategory={setSelectedCategory} />
-<Outlet context={{ selectedCategory }}/>
+<Outlet context={{ selectedCategory }}/>           // (Outlet = placeholder for main content of each page wrapped with Rootlayout)
 
-Header:
-- setter-function is passed to CategoriesBox:
+2. Header:
+
+- setter-function 'setSelectedCategory' is recieved via prop 'onSelectCategory' and passed further to CategoriesBox.jsx (= child-component of Header):
 
 export default function Header({ onSelectCategory }) {
   <CategoriesBox onSelectCategory={onSelectCategory} />
 }
 
-CategoriesBox:
+3. CategoriesBox:
+
+- fetching all categories-names from backend:
+const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/categories`);
+setCategories(res.data.data);
+
 export default function CategoriesBox({ onSelectCategory }) {
   <button onClick={() => onSelectCategory(i + 1)}>Category {i+1}</button>
+  OR LATER (instead just number for each category -> category names)
+   <button onClick={() => onSelectCategory(categ.category_id)}>Category {categ.category_name}</button>
 }
 
 - setter-function is called on click, and is taking value (selected category-button)
+
+
+--------------------------------------------------------------------------------------
+
+Fetching all products from one category:
+
+CategoryItems.jsx:
+
+// state for collecting all items/products of one category:
+const [items, setItems] = useState([]);
+
+const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`);
+setItems(res.data.data);
+
+-> map()-function to fetch all attributes of each fetched product as props, then pass and display them in ItemCard.jsx for each product.
+
+- contains a loader, spinning while products are being fetched:
+
+  const [loading, setLoading] = useState(false);
+
+- CategoryItems-component is included on ProductsList-page - which renders whenever user wants to fetch products based on some category, filter? etc.
+
+--------
+
+ProductsList-page:
+
+- is consuming context (selectedCategory), as one of the pages wrapped with Rootlayout:
+
+  const { selectedCategory } = useOutletContext();
+
+-----------------------------------------------------------
+
+Clicking on specific ItemCard and passing it's ID:
+
+
+ProductsList.jsx: 
+
+- adds prop 'onItemSelected' to it's child-component <CategoryItems>, the prop is containing 'id' (of the selected product)
+
+CategoryItems.jsx
+
+- accepts prop 'onItemSelected' from the parent ProductsList-page, and tracks state for 'ItemCardClicked':
+
+  const [ItemCardClicked, setItemCardClicked] = useState(null);
+
+  function handleItemCardClick(itemId) {
+    setItemCardClicked(itemId);
+    console.log("Clicked product id:", itemId);
+    if (onItemSelected) {
+      onItemSelected(itemId); // sending ID to the parent-component
+    }
+  }
+
+  <ItemCard /other props.../  onClick={() => handleItemCardClick(item.item_id)}>
+  // taking itemId of the clicked ItemCard as argument & setting it to the state 'ItemCardClicked', just passing function, not calling it
+
+ItemCard.jsx
+
+- adding onClick prop to the props list:
+export default function ItemCard({name, description, price, discountPrice, quantity, picture, category, tags, className, onClick })
+
+- adding onClick prop to the whole section - reacting when the whole section, wrapping element / the card is clicked:
+ return (
+    <section className={className} onClick={onClick}>
+      <div className="item-image">
+  ...)
+
 
