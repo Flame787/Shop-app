@@ -10,6 +10,7 @@ export default function Product() {
   // const params = useParams();
 
   const { id } = useParams();
+  // fetching ID from the http-link in api-get-request: `${process.env.REACT_APP_API_URL}/api/items/${id}`
 
   const {
     data: product,
@@ -24,6 +25,7 @@ export default function Product() {
       return res.data.data;
     },
   });
+  // up here React Query decides if data will be fetched from cached data -> then instant rendering, or if needs to send a new api-request
 
   if (isLoading) return <div className="loader">Loading product...</div>;
   if (isError) return <div>Error loading product</div>;

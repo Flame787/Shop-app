@@ -1,14 +1,31 @@
-// wrapper for ItemCard (for single Product): 
-// can be tesed on: http://localhost:3000/products/:id
+// wrapper for ItemCard (for single Product):
+// can be tested on: http://localhost:3000/products/:id
+
+// ProductSection is a child-component of Product.jsx - page: { path: "products/:id", element: <Product /> }
+// ProductSection serves as a component for rendering data from parent: Product.jsx
+// data are fetched from Product.jsx, where React Query decides if getting already cached data, or sending a new fetch-request
 
 import ItemCard from "./ItemCard";
 
-export default function ProductSection() {
+export default function ProductSection({ product }) {
   return (
     <>
       <section className="product-section div-center">
-        <ItemCard />
+        <ItemCard
+          key={product.item_id}
+          name={product.name}
+          description={product.description}
+          price={product.price}
+          discountPrice={product.discount_price}
+          quantity={product.quantity_in_stock}
+          picture={product.picture_url}
+          category={product.category_id}
+          tags={product.tags}
+          className="item-card"
+        />
       </section>
     </>
   );
 }
+
+// add another class to ItemCard, that will overwrite or modify existing "item-card", that makes the ProductCard bigger
