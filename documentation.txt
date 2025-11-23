@@ -105,6 +105,10 @@ setItems(res.data.data);
 
 -> map()-function to fetch all attributes of each fetched product as props, then pass and display them in ItemCard.jsx for each product.
 
+- contains a loader, spinning while products are being fetched:
+
+  const [loading, setLoading] = useState(false);
+
 - CategoryItems-component is included on ProductsList-page - which renders whenever user wants to fetch products based on some category, filter? etc.
 
 --------
@@ -115,11 +119,6 @@ ProductsList-page:
 
   const { selectedCategory } = useOutletContext();
 
-- contains a loader, spinning while products in CategoryItems-component are loading:
-
-  const [loading, setLoading] = useState(false);
-
-- loader lives in parent component ProductsList-page, while fetching happens in it's child-component CategoryItems.jsx
-- CategoryItems.jsx should report to the parent-page when fetching is finished, through callback-prop:
+  
 
 

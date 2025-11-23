@@ -2,9 +2,25 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import ItemCard from "../Product/ItemCard";
 
-export default function CategoryItems({ categoryId, onLoading }) {
+export default function CategoryItems({ categoryId }) {
   // state for collecting all items/products of one category:
   const [items, setItems] = useState([]);
+
+  // state for loading, while data are being fetched:
+  const [loading, setLoading] = useState(false);
+
+  // debounce effect for showing message "No items in this category" if products will eventually load, but not in the 1st sec -> delay:
+  const [showEmpty, setShowEmpty] = useState(false);
+
+  // side effect for showing message "No items in this category":
+  useEffect(() => {
+    if (items.length === 0 && !loading) {
+      const timer = setTimeout(() => setShowEmpty(true), 300); // wait 300ms
+      return () => clearTimeout(timer);
+    } else {
+      setShowEmpty(false);
+    }
+  }, [items, loading]);
 
   // side-effect for fetching all products from one category - API GET-request:
   useEffect(() => {
@@ -12,9 +28,7 @@ export default function CategoryItems({ categoryId, onLoading }) {
 
     const fetchItems = async () => {
       try {
-        // new - to pass loading status to the parent-page ProductsList.jsx:
-        onLoading(true); // signal to parent-page: start loading
-
+        setLoading(true);
         // const res = await axios.get(`/api/items/category/${categoryId}`);
         // -> cross-origin issue, fetching from http://localhost:5000/api/items/category/1 to http://localhost:3000/products
         const res = await axios.get(
@@ -24,14 +38,20 @@ export default function CategoryItems({ categoryId, onLoading }) {
       } catch (err) {
         console.error("Error fetching items:", err);
       } finally {
-        onLoading(false); // signal to parent-page: stop loading
+        setLoading(false); 
       }
     };
     // calling the fetch-function (if a category was selected, and not null):
     if (categoryId) fetchItems();
-  }, [categoryId, onLoading]);
 
-  if (items.length === 0) {
+  }, [categoryId]);
+
+  if (loading) {
+    return <div className="loader"></div>;
+  }
+
+  // message shows up not immediatelly, but with small delay, after 300 ms:
+  if (showEmpty) {
     return <p className="div-center">No items in this category</p>;
   }
 
