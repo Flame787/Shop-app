@@ -1,10 +1,3 @@
-// import ItemTitle from "./ItemTitle";
-// import ItemPicture from "./ItemPicture";
-// import ItemDescription from "./ItemDescription";
-// import ItemTags from "./ItemTags";
-// import ItemPrice from "./ItemPrice";
-// import ItemQuantity from "./ItemQuantity";
-
 import { useState } from "react";
 
 export default function ItemCard({
@@ -84,7 +77,7 @@ export default function ItemCard({
             </div>
           </div>
 
-          <button className="link buy-button">Add to Cart</button>
+          <button className="link buy-button button-text">Add to Cart</button>
         </div>
 
         {/* <p className="item-category">Category: {category}</p> */}

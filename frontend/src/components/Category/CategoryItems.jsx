@@ -2,14 +2,19 @@ import axios from "axios";
 import { useState, useEffect } from "react";
 import ItemCard from "../Product/ItemCard";
 
-export default function CategoryItems({ categoryId }) {
+export default function CategoryItems({ categoryId, onLoading }) {
+  // state for collecting all items/products of one category:
   const [items, setItems] = useState([]);
 
+  // side-effect for fetching all products from one category - API GET-request:
   useEffect(() => {
     if (!categoryId) return;
 
     const fetchItems = async () => {
       try {
+        // new - to pass loading status to the parent-page ProductsList.jsx:
+        onLoading(true); // signal to parent-page: start loading
+
         // const res = await axios.get(`/api/items/category/${categoryId}`);
         // -> cross-origin issue, fetching from http://localhost:5000/api/items/category/1 to http://localhost:3000/products
         const res = await axios.get(
@@ -18,11 +23,13 @@ export default function CategoryItems({ categoryId }) {
         setItems(res.data.data);
       } catch (err) {
         console.error("Error fetching items:", err);
+      } finally {
+        onLoading(false); // signal to parent-page: stop loading
       }
     };
-
+    // calling the fetch-function (if a category was selected, and not null):
     if (categoryId) fetchItems();
-  }, [categoryId]);
+  }, [categoryId, onLoading]);
 
   if (items.length === 0) {
     return <p className="div-center">No items in this category</p>;
