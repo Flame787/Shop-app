@@ -5,7 +5,7 @@ export default function Cart() {
   return (
     <>
       {/* <Header /> */}
-      <div className="div-center">The Cart Page</div>
+      <div className="div-center main-title">The Cart Page</div>
       <div className="div-center">...</div>
       <div className="div-center">...</div>
       {/* <Footer /> */}
