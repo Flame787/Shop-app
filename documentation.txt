@@ -162,13 +162,46 @@ export default function ItemCard({name, description, price, discountPrice, quant
 *** using React Query / Tanstack for server state (data fetched from API)
 - advantages: caching, refetching, loading/error state out‑of‑the‑box.
 
-Product.jsx
+Product.jsx - React Query:
 
--
+const { id } = useParams();
+  // fetching ID from the http-link:  http://localhost:3000/products/24 -> id='24'
 
-CategoryItems.jsx
+  const {data: product, isLoading, isError} = useQuery({
+    queryKey: ["product", id],         // unique key for caching data
+    queryFn: async () => {             // query-function, API-request for data
+      const res = await axios.get(      
+        `${process.env.REACT_APP_API_URL}/api/items/${id}`
+      );
+      return res.data.data;
+    },
+  });
+if (isLoading) return <div className="loader">Loading product...</div>;
+if (isError) return <div>Error loading product</div>;
+if (!product) return <div>Product not found</div>;
 
--
+return( <ProductSection product={product} />)
+
+
+CategoryItems.jsx - React Query:
+
+export default function CategoryItems({ categoryId, onItemSelected }) {
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["items", categoryId],   // unique key for caching data
+    queryFn: async () => {             // query-function, API-request for data
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`
+      );
+      return res.data.data;
+    },
+    enabled: !!categoryId, 
+  });
+
+  if (isLoading) return <div className="loader"></div>;
+  if (items.length === 0) return <p className="div-center">No items in this category</p>;
+
+  return (<ItemCard /...other props.../ onClick={() => onItemSelected(item.item_id)}>)
+}
 
 
 ----------------------------------------------------------------------------------------------------------------------------

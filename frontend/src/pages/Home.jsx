@@ -7,7 +7,7 @@ export default function Home() {
   return (
     <>
       {/* <Header /> */}
-      <div className="div-center">This is home page!</div>
+      <div className="div-center main-title">This is home page!</div>
       <div className="div-center">...</div>
       <div className="div-center">...</div>
       {/* <Footer /> */}

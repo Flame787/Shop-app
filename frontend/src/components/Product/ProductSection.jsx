@@ -5,9 +5,20 @@
 // ProductSection serves as a component for rendering data from parent: Product.jsx
 // data are fetched from Product.jsx, where React Query decides if getting already cached data, or sending a new fetch-request
 
+import { useState, useEffect } from "react";
 import ItemCard from "./ItemCard";
 
 export default function ProductSection({ product }) {
+
+  // changing style of the ItemCard dinamically, depending if on bigger or smaller resolution:
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 656);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth <= 656);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   return (
     <>
       <section className="product-section div-center">
@@ -21,7 +32,7 @@ export default function ProductSection({ product }) {
           picture={product.picture_url}
           category={product.category_id}
           tags={product.tags}
-          className="item-card"
+          className={isMobile ? "item-card" : "product-card"}
         />
       </section>
     </>
