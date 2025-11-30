@@ -1,3 +1,5 @@
+// CartButton is part of the Navbar, used for navigation to the Cart-page (on click):
+
 // import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
 
