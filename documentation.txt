@@ -208,3 +208,9 @@ export default function CategoryItems({ categoryId, onItemSelected }) {
 
 *** using Redux Toolkit for: global state (user session, cart, UI state)
 - advantages: centralized store, easy data sharing between components
+
+
+Add to Cart - saves Product ID & Quantity into state - global state (Redux toolkit) 
+-> state is passed to CartMain, and then CartMain is used on parent-page Cart, and in parent-components: CartModal 
+
+

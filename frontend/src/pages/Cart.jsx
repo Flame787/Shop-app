@@ -1,14 +1,13 @@
 // import Header from "../components/reusable/Header";
 // import Footer from "../components/reusable/Footer";
+// import CartMain from "../components/Cart/CartMain";
 
 export default function Cart() {
   return (
     <>
-      {/* <Header /> */}
       <div className="div-center main-title">The Cart Page</div>
-      <div className="div-center">...</div>
-      <div className="div-center">...</div>
-      {/* <Footer /> */}
+
+      {/* <CartMain /> */}
     </>
   );
 }
