@@ -1,6 +1,8 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
+import CartContext from "../../context-store/CartContext";
 
 export default function ItemCard({
+  id,
   name,
   description,
   price,
@@ -12,8 +14,12 @@ export default function ItemCard({
   className,
   onClick,
 }) {
+  // access to cart-context:
+  const cartCtx = useContext(CartContext);
+
   // State for quantity-button:
   const [qty, setQty] = useState(1);
+
   const increase = () => setQty((q) => q + 1);
   const decrease = () => setQty((q) => (q > 1 ? q - 1 : 1));
 
@@ -25,16 +31,30 @@ export default function ItemCard({
   const hasDiscount =
     numericDiscount !== null && numericDiscount < numericPrice;
 
+  // function for adding items to cart:
+  function handleAddToCart() {
+    cartCtx.addItem({
+      id,
+      name,
+      description,
+      price: hasDiscount ? numericDiscount : numericPrice,
+      quantity: qty,
+      picture,
+      category,
+      tags,
+    });
+  }
+
   return (
-    <section className={className} onClick={onClick}>
-      <div className="item-image">
+    <section className={className}>
+      <div className="item-image" onClick={onClick}>
         <img src={picture} alt={name} className="product-image" />
       </div>
       <div className="item-info">
-        <h3 className="item-name">{name}</h3>
-        <p className="item-description">{description}</p>
+        <h3 className="item-name" onClick={onClick}>{name}</h3>
+        <p className="item-description" onClick={onClick}>{description}</p>
 
-        <div className="item-pricing">
+        <div className="item-pricing" onClick={onClick}>
           {hasDiscount ? (
             <>
               <span className="item-price original">
@@ -70,7 +90,14 @@ export default function ItemCard({
                 −
               </button>
 
-              <span className="qty-value">{qty}</span>
+              {/* <span className="qty-value">{qty}</span> */}
+              <input
+                type="number"
+                min="1"
+                value={qty}
+                onChange={(e) => setQty(Number(e.target.value))}
+                className="qty-input"
+              />
 
               <button onClick={increase} className="qty-btn">
                 +
@@ -78,7 +105,12 @@ export default function ItemCard({
             </div>
           </div>
 
-          <button className="link buy-button button-text">Add to Cart</button>
+          <button
+            onClick={handleAddToCart}
+            className="link buy-button button-text"
+          >
+            Add to Cart
+          </button>
         </div>
 
         {/* <p className="item-category">Category: {category}</p> */}

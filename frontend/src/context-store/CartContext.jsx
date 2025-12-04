@@ -25,13 +25,15 @@ function cartReducer(state, action) {
       // taking all properties of an existing item, spreading them into this new object, & adding +1 to quantity-property:
       const updatedItem = {
         ...existingItem,
-        quantity: existingItem.quantity + 1,
+        // quantity: existingItem.quantity + 1,
+        quantity: existingItem.quantity + action.item.quantity,
       };
       // overwriting existing item with the updatedItem (if quantity has changed):
       updatedItems[existingCartItemIndex] = updatedItem;
     } else {
       // if not > -1, item doesn't exist in array, and should be added (push). Also adding quantity-property & setting it to 1:
-      updatedItems.push({ ...action.item, quantity: 1 });
+      // updatedItems.push({ ...action.item, quantity: 1 });
+      updatedItems.push({ ...action.item, quantity: action.item.quantity });
     }
     // returning new object - keeping parts that didn't change, and overwriting items with updatedItems:
     return { ...state, items: updatedItems };
@@ -54,7 +56,7 @@ function cartReducer(state, action) {
       updatedItems.splice(existingCartItemIndex, 1);
     } else {
       // if the quantity of item in the cart is bigger than 1, we want to just remove -1, update that quantity, but leave the item in the cart,
-      // we are creating a new item, based on old item, with reduced quantity:
+      // we are creating a new item (a copy), based on old item, with reduced quantity:
       const updatedItem = {
         ...existingCartItem,
         quantity: existingCartItem.quantity - 1,
@@ -71,9 +73,9 @@ function cartReducer(state, action) {
 
 export function CartContextProvider({ children }) {
   const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] });
+  // destructuring the state that is returned by useReducer-hook: 1st part is cart-state, 2nd part is dispatchCartAction
   // 1st parameter of useReducer-hook: passing the name of reducer-function (not calling it, just passing it)
   // 2nd parameter of useReducer-hook: initial state, when component renders for the first time.
-  // destructuring the state that is returned by useReducer-hook: 1st part is cart-state, 2nd part is dispatchCartAction
 
   function addItem(item) {
     dispatchCartAction({ type: "ADD_ITEM", item: item });
@@ -85,12 +87,14 @@ export function CartContextProvider({ children }) {
     // calling the dispatch-function, passing an action-object with action-type and id as payload
   }
 
-  // passing the state to CartContextProvider:
+  // passing the state to CartContextProvider (so other components can access it via useContext-hook):
   const cartContext = {
     items: cart.items,
     addItem: addItem,
     removeItem: removeItem,
   };
+
+  console.log("cartContext:", cartContext);
 
   return (
     <CartContext.Provider value={cartContext}>{children}</CartContext.Provider>

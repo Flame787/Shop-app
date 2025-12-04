@@ -9,7 +9,6 @@ import { useState, useEffect } from "react";
 import ItemCard from "./ItemCard";
 
 export default function ProductSection({ product }) {
-
   // changing style of the ItemCard dinamically, depending if on bigger or smaller resolution:
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 656);
 
@@ -24,6 +23,7 @@ export default function ProductSection({ product }) {
       <section className="product-section div-center">
         <ItemCard
           key={product.item_id}
+          id={product.item_id}
           name={product.name}
           description={product.description}
           price={product.price}

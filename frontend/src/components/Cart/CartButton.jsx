@@ -2,8 +2,19 @@
 
 // import { Link } from "react-router-dom";
 import { NavLink } from "react-router-dom";
+import { useContext } from "react";
+import CartContext from "../../context-store/CartContext";
 
 export default function CartButton() {
+  const cartCtx = useContext(CartContext);
+
+  const totalCartItems = cartCtx.items.reduce((totalNumberOfItems, item) => {
+    return totalNumberOfItems + item.quantity;
+  }, 0);
+  // reduce() - function that reduces an array to a single value
+  // arguments of reduce()-function: 1st is a functions, 2nd is a starting value (0)
+  // function which is 1st argument also gets 2 arguments
+
   return (
     // <Link to="/cart" className="link cart-button">
     //   Cart
@@ -17,7 +28,7 @@ export default function CartButton() {
             : "link button-text cart-button"
         }
       >
-        Cart
+        Cart ({totalCartItems})
       </NavLink>
     </div>
   );
