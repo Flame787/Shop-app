@@ -215,10 +215,10 @@
   height: 470px;
 }
 
-.item-image,
-.item-name,
-.item-description,
-.item-pricing {
+.category-card .item-image,
+.category-card .item-name,
+.category-card .item-description,
+.category-card .item-pricing {
   cursor: pointer;
 }
 
@@ -465,6 +465,18 @@ button.qty-btn:hover {
 .qty-input[type="number"] {
   -moz-appearance: textfield;
   appearance: none;
+}
+
+.cart-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+
+.cart-items-info {
+  margin-bottom: 20px;
+  background-color: #a2a6a7;
 }
 
 @media (max-width: 1465px) {

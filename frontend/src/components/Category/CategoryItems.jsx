@@ -102,7 +102,7 @@ export default function CategoryItems({ categoryId, onItemSelected }) {
           picture={item.picture_url}
           category={item.category_id}
           tags={item.tags}
-          className="item-card"
+          className="item-card category-card"
           // onClick={() => handleItemCardClick(item.item_id)}
           onClick={() => onItemSelected(item.item_id)}
           // taking itemId of the clicked ItemCard as argument & setting it to the state 'ItemCardClicked', just passing function, not calling it
