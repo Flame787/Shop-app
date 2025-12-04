@@ -6,21 +6,23 @@ import ItemCard from "../Product/ItemCard";
 export default function CategoryItems({ categoryId, onItemSelected }) {
   // NEW - React Query handling fetch-request, caching and refetching:
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["items", categoryId],   // unique key for caching data
-    queryFn: async () => {             // query-function, API-request for data
+    queryKey: ["items", categoryId], // unique key for caching data
+    queryFn: async () => {
+      // query-function, API-request for data
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`
       );
       return res.data.data;
     },
-    enabled: !!categoryId, 
+    enabled: !!categoryId,
     // enabled - determins if function will start at all. Fetching only if categoryId is existing, not null.
-    // enabled: false - query will not execute. enabled: true - query starts automatically. 
+    // enabled: false - query will not execute. enabled: true - query starts automatically.
     // !! - turns a value (string, number...) of some variable into a boolean value (true, false) - double inversion (truthy → false, false → true)
   });
 
   if (isLoading) return <div className="loader"></div>;
-  if (items.length === 0) return <p className="div-center">No items in this category</p>;
+  if (items.length === 0)
+    return <p className="div-center">No items in this category</p>;
 
   // // state for collecting all items/products of one category:
   // const [items, setItems] = useState([]);
@@ -91,6 +93,7 @@ export default function CategoryItems({ categoryId, onItemSelected }) {
       {items.map((item) => (
         <ItemCard
           key={item.item_id}
+          id={item.item_id}
           name={item.name}
           description={item.description}
           price={item.price}
