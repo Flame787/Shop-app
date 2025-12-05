@@ -34,25 +34,34 @@ export default function ItemCard({
 
   // function for adding items to cart:
   function handleAddToCart() {
-    cartCtx.addItem({
-      id,
-      name,
-      description,
-      price: hasDiscount ? numericDiscount : numericPrice,
-      quantity: qty,
-      picture,
-      category,
-      tags,
-    });
+    try {
+      cartCtx.addItem({
+        id,
+        name,
+        description,
+        price: hasDiscount ? numericDiscount : numericPrice,
+        quantity: qty,
+        picture,
+        category,
+        tags,
+      });
 
-    // a toast-notification in lower right corner, whenever an item gets added to the Cart:
+      // a toast-notification in lower right corner, whenever an item gets added to the Cart:
 
-    // toast(`✓ ${name} added to cart`);
-    toast(
-      <div>
-        <span className="checkmark">✓</span>  <span className="toast-itemname">{name}</span> added to cart
-      </div>
-    );
+      // toast(`✓ ${name} added to cart`);
+      toast(
+        <div>
+          <span className="checkmark">✓</span>{" "}
+          <span className="toast-itemname">{name}</span> added to cart
+        </div>
+      );
+    } catch (error) {
+      toast.error(
+        <div>
+          <span className="toast-itemname">{name}</span> could not be added
+        </div>
+      );
+    }
   }
 
   return (
@@ -72,14 +81,14 @@ export default function ItemCard({
           {hasDiscount ? (
             <>
               <span className="item-price original">
-                €{numericPrice.toFixed(2)}
+                {numericPrice.toFixed(2)} €
               </span>
               <span className="item-price discount">
-                €{numericDiscount.toFixed(2)}
+                {numericDiscount.toFixed(2)} €
               </span>
             </>
           ) : (
-            <span className="item-price">€{numericPrice.toFixed(2)}</span>
+            <span className="item-price">{numericPrice.toFixed(2)} €</span>
           )}
         </div>
 

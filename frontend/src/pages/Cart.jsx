@@ -5,7 +5,7 @@ import CartMain from "../components/Cart/CartMain";
 export default function Cart() {
   return (
     <>
-      <div className="div-center main-title">The Cart Page</div>
+      <h3 className="div-center main-title2">Your cart</h3>
       <CartMain />
     </>
   );

@@ -237,3 +237,22 @@ Then it maps through each item of the cartCtx, and for each item it renders a <l
 ... ) ) }
 
 In the end, CartMain.jsx shows Total price, and a button to Proceed to payment. 
+
+-----------------------------------------
+
+Showing Toastify-confirmation when an item is added to Cart:
+
+ToastContainer is imported to RootLayout-component, so toast-notifications can be used in all child-components.
+Added toast to ItemCard, it is called inside of handleAddToCart()-function, whenever “Add to Cart” button is pressed. 
+
+toast(
+      <div>
+        <span className="checkmark">✓</span>  <span className="toast-itemname">{name}</span> added to cart
+      </div>
+    );
+
+Also added catch-error notification to ItemCard, if item cannot be added 
+(test: simply comment out this line in CartContext: addItem: addItem, - so adding will not be possible).
+
+-------------------
+
