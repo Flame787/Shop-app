@@ -18,7 +18,7 @@ export default function CartMain() {
           <h3>Items in the chart</h3>
           <ul>
             {cartCtx.items.map((item) => (
-              <li key={item.item_id} className="cart-item">
+              <li key={item.id} className="cart-item">
                 <div className="cart-item-picture">
                   <img
                     src={item.picture}

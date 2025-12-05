@@ -479,6 +479,34 @@ button.qty-btn:hover {
   background-color: #a2a6a7;
 }
 
+.Toastify__progress-bar {
+  background: #e6991d !important;
+}
+
+.Toastify__progress-bar--animated,
+.Toastify__progress-bar-theme--light,
+.Toastify__progress-bar-theme--dark {
+  background: #e6991d !important;
+}
+
+.Toastify__toast {
+  font-size: 0.9rem !important;
+  font-family: "Questrial", sans-serif !important;
+  color: #555555 !important;
+  padding: 20px !important;
+}
+
+.checkmark {
+   color: #107c0b;
+   font-weight: bolder;
+}
+
+.toast-itemname {
+  font-weight: bolder;
+  color: #000000;
+}
+
+
 @media (max-width: 1465px) {
   .categories,
   .category-items-div {

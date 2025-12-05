@@ -219,7 +219,21 @@ export default function CategoryItems({ categoryId, onItemSelected }) {
 - useReducer is used for more complex state, + 2 action-types: 'ADD_ITEM', 'REMOVE_ITEM'
 - ContextProvider is wrapped arround all pages in App.js
 
-
 Next: 
 add this functionallity to ItemCard.jsx, onClick -> add to Cart, 
 also develop Cart-page and add add/remove functionallities there. 
+
+
+Cart.jsx - page contains: 
+
+  CartMain.jsx - component, which uses cart-context: 
+
+const cartCtx = useContext(CartContext);
+
+Then it maps through each item of the cartCtx, and for each item it renders a <li>, containing item-name, image, price, quantity.
+<ul>
+    {cartCtx.items.map((item) => (
+        <li key={item.item_id} className="cart-item"> 
+... ) ) }
+
+In the end, CartMain.jsx shows Total price, and a button to Proceed to payment. 

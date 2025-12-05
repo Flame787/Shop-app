@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import CartContext from "../../context-store/CartContext";
+import { toast } from "react-toastify"; // Toastify - for instant notifications (Toastify is set up in RootLayout component)
 
 export default function ItemCard({
   id,
@@ -43,6 +44,15 @@ export default function ItemCard({
       category,
       tags,
     });
+
+    // a toast-notification in lower right corner, whenever an item gets added to the Cart:
+
+    // toast(`✓ ${name} added to cart`);
+    toast(
+      <div>
+        <span className="checkmark">✓</span>  <span className="toast-itemname">{name}</span> added to cart
+      </div>
+    );
   }
 
   return (
@@ -51,8 +61,12 @@ export default function ItemCard({
         <img src={picture} alt={name} className="product-image" />
       </div>
       <div className="item-info">
-        <h3 className="item-name" onClick={onClick}>{name}</h3>
-        <p className="item-description" onClick={onClick}>{description}</p>
+        <h3 className="item-name" onClick={onClick}>
+          {name}
+        </h3>
+        <p className="item-description" onClick={onClick}>
+          {description}
+        </p>
 
         <div className="item-pricing" onClick={onClick}>
           {hasDiscount ? (
