@@ -1,5 +1,6 @@
 import { useState, useContext } from "react";
 import CartContext from "../../context-store/CartContext";
+import { toast } from "react-toastify"; // Toastify - for instant notifications (Toastify is set up in RootLayout component)
 
 export default function ItemCard({
   id,
@@ -33,16 +34,34 @@ export default function ItemCard({
 
   // function for adding items to cart:
   function handleAddToCart() {
-    cartCtx.addItem({
-      id,
-      name,
-      description,
-      price: hasDiscount ? numericDiscount : numericPrice,
-      quantity: qty,
-      picture,
-      category,
-      tags,
-    });
+    try {
+      cartCtx.addItem({
+        id,
+        name,
+        description,
+        price: hasDiscount ? numericDiscount : numericPrice,
+        quantity: qty,
+        picture,
+        category,
+        tags,
+      });
+
+      // a toast-notification in lower right corner, whenever an item gets added to the Cart:
+
+      // toast(`✓ ${name} added to cart`);
+      toast(
+        <div>
+          <span className="checkmark">✓</span>{" "}
+          <span className="toast-itemname">{name}</span> added to cart
+        </div>
+      );
+    } catch (error) {
+      toast.error(
+        <div>
+          <span className="toast-itemname">{name}</span> could not be added
+        </div>
+      );
+    }
   }
 
   return (
@@ -51,21 +70,25 @@ export default function ItemCard({
         <img src={picture} alt={name} className="product-image" />
       </div>
       <div className="item-info">
-        <h3 className="item-name" onClick={onClick}>{name}</h3>
-        <p className="item-description" onClick={onClick}>{description}</p>
+        <h3 className="item-name" onClick={onClick}>
+          {name}
+        </h3>
+        <p className="item-description" onClick={onClick}>
+          {description}
+        </p>
 
         <div className="item-pricing" onClick={onClick}>
           {hasDiscount ? (
             <>
               <span className="item-price original">
-                €{numericPrice.toFixed(2)}
+                {numericPrice.toFixed(2)} €
               </span>
               <span className="item-price discount">
-                €{numericDiscount.toFixed(2)}
+                {numericDiscount.toFixed(2)} €
               </span>
             </>
           ) : (
-            <span className="item-price">€{numericPrice.toFixed(2)}</span>
+            <span className="item-price">{numericPrice.toFixed(2)} €</span>
           )}
         </div>
 

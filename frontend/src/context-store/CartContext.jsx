@@ -68,6 +68,20 @@ function cartReducer(state, action) {
     return { ...state, items: updatedItems };
   }
 
+  // function for updating item quantity in the Cart:
+  if (action.type === "UPDATE_ITEM_QUANTITY") {
+    const updatedItems = state.items.map((item) =>
+      item.id === action.id ? { ...item, quantity: action.quantity } : item
+    );
+    return { ...state, items: updatedItems };
+  }
+
+  // function for deleting entirely a product from the Cart with Remove-button:
+  if (action.type === "DELETE_ITEM") {
+    const updatedItems = state.items.filter((item) => item.id !== action.id);
+    return { ...state, items: updatedItems };
+  }
+
   return state;
 }
 
@@ -87,11 +101,23 @@ export function CartContextProvider({ children }) {
     // calling the dispatch-function, passing an action-object with action-type and id as payload
   }
 
+  // function for updating item quantity in the Cart:
+  function updateItemQuantity(id, quantity) {
+    dispatchCartAction({ type: "UPDATE_ITEM_QUANTITY", id, quantity });
+  }
+
+  // function for deleting entirely a product from the Cart with Remove-button:
+  function deleteItem(id) {
+    dispatchCartAction({ type: "DELETE_ITEM", id });
+  }
+
   // passing the state to CartContextProvider (so other components can access it via useContext-hook):
   const cartContext = {
     items: cart.items,
     addItem: addItem,
     removeItem: removeItem,
+    updateItemQuantity,
+    deleteItem,
   };
 
   console.log("cartContext:", cartContext);
