@@ -260,11 +260,13 @@ To do:
 
 + u Toast notifikacije u ItemCard dodati u zagradu (item.quantity), nakon item.name.
 
-- Proceed to payment button u CartMain se prikazuje samo ako ima barem 1 item. Ako je cart prazan, onda ne treba ni button biti vidljiv. 
++ Proceed to payment button u CartMain se prikazuje samo ako ima barem 1 item. Ako je cart prazan, onda ne treba ni button biti vidljiv. 
 
-- dodati Home button
++ dodati Home button
 
-- dodati Footer
++ dodati Footer
+
+- srediti ponašanje footera na manjim rezolucijama
 
 - sortiranje, filtriranje, searchanje
 
