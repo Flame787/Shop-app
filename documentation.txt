@@ -256,3 +256,26 @@ Also added catch-error notification to ItemCard, if item cannot be added
 
 -------------------
 
+To do:
+
++ u Toast notifikacije u ItemCard dodati u zagradu (item.quantity), nakon item.name.
+
+- Proceed to payment button u CartMain se prikazuje samo ako ima barem 1 item. Ako je cart prazan, onda ne treba ni button biti vidljiv. 
+
+- dodati Home button
+
+- dodati Footer
+
+- sortiranje, filtriranje, searchanje
+
+- login-Modal za username & password
+
+- login/logout-state spremljen preko Reduxa
+
+- Account-page za Sign up (kreiranje i izmjenu accounta)
+
+- spremanje Accounta svakog usera u bazu i fetchanje podataka radi izmjena
+
+- spremanje podataka o orderu produkata (Cart) u bazu (da se ne gube kod refresha stranice)
+
+- povezivanje ordera, accounta i proizvoda u bazi

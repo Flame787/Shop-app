@@ -3,6 +3,7 @@
 import { useContext } from "react";
 import CartContext from "../../context-store/CartContext";
 import { toast } from "react-toastify"; // Toastify - for instant notifications (Toastify is set up in RootLayout component)
+import { NavLink } from "react-router-dom";
 
 export default function CartMain() {
   const cartCtx = useContext(CartContext);
@@ -24,6 +25,16 @@ export default function CartMain() {
 
   // handler-functions which are editing items-contaxt-state and adding toast-notifications for each operation:
   function handleQuantityChange(id, newQty, name) {
+    // find current item from context:
+    const currentItem = cartCtx.items.find((i) => i.id === id);
+
+    // if quantity of this item didn't acctually change - for example if user is pressing minus (-),
+    // but quantity is already 1 and cannot be any lower -> then don't show any toast-notifications for fake 'updates', just return:
+    if (!currentItem || currentItem.quantity === newQty) {
+      return;
+    }
+
+    // otherwise, update and show toast-notification:
     cartCtx.updateItemQuantity(id, newQty);
 
     toast(
@@ -39,7 +50,7 @@ export default function CartMain() {
 
     toast(
       <div>
-        <span className="error-icon">❌</span>{" "}
+        <span className="error-icon">❎</span>{" "}
         <span className="toast-itemname">{name}</span> removed from cart
       </div>
     );
@@ -120,7 +131,8 @@ export default function CartMain() {
                           onClick={() =>
                             handleQuantityChange(
                               item.id,
-                              item.quantity + 1, item.name
+                              item.quantity + 1,
+                              item.name
                             )
                           }
                           className="qty-btn"
@@ -151,9 +163,24 @@ export default function CartMain() {
             </span>
           </div>
         </div>
-        <button className="link category-link proceed-button">
-          Proceed to payment <span className="arrow">➡</span>
-        </button>
+        {totalCartItems === 0 ? (
+          <p>There are no items in your cart.</p>
+        ) : (
+          <button className="link category-link proceed-button">
+            Proceed to payment <span className="arrow">➡</span>
+          </button>
+        )}
+
+        <NavLink
+          to="/"
+          className={({ isActive }) =>
+            isActive
+              ? "link button-text home-button home2-button active-link"
+              : "link button-text home-button home2-button"
+          }
+        >
+          Home
+        </NavLink>
       </section>
     </>
   );

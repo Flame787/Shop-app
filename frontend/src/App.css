@@ -568,7 +568,8 @@ img.cart-image.product-image {
 }
 
 .remove-button,
-.proceed-button {
+.proceed-button,
+.home-button {
   background: linear-gradient(145deg, #2d2d2d, #3c3c3c);
   color: #f0f0f0;
   font-size: 0.9rem;
@@ -583,7 +584,12 @@ img.cart-image.product-image {
 
 .proceed-button {
   width: 175px;
-  margin-bottom: 50px;
+  padding: 10px 12px 8px;
+  margin-bottom: 20px;
+}
+
+.home2-button {
+  margin: 40px 0 60px;
 }
 
 .arrow {
@@ -715,8 +721,8 @@ img.cart-image.product-image {
     width: 110px;
   }
 
-  .proceed-button{
-     margin-bottom: 50px;
+  .proceed-button {
+    margin-bottom: 50px;
   }
 }
 
