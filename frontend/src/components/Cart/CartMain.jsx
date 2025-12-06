@@ -60,8 +60,8 @@ export default function CartMain() {
     <>
       <section className="cart-main div-center">
         <div className="cart-items-info">
-          <h3 className="main-title2 div-center">
-            Selected products ({totalCartItems}):
+          <h3 className="main-title2 div-center2">
+            Selected products (<span className="orange-letters">{totalCartItems}</span>):
           </h3>
           <ul>
             {cartCtx.items.map((item) => (

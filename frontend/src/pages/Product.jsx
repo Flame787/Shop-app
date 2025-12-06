@@ -15,10 +15,11 @@ export default function Product() {
   // fetching ID-parameter from the http-link: http://localhost:3000/products/24 -> id='24'
 
   // useQuery()-call, for fetching product-data based on the ID from the link:
-  const {          // state-object {} received from useQuery, has 3 parts:
+  const {
+    // state-object {} received from useQuery, has 3 parts:
     data: product, // 1. result-state received from fetching-function, or from cache
-    isLoading,     // 2. loading-state: true, while fetching data
-    isError,       // 3. error-state: true only if fetching-function results with error
+    isLoading, // 2. loading-state: true, while fetching data
+    isError, // 3. error-state: true only if fetching-function results with error
   } = useQuery({
     // useQuery()-call
     queryKey: ["product", id], // unique key for saving fetched data in cache
@@ -39,11 +40,11 @@ export default function Product() {
 
   return (
     <>
-      <div className="div-center main-title">Product Overview</div>
+      {/* <div className="div-center main-title">Product Overview</div> */}
+      <h3 className="div-center main-title2">Product overview</h3>
       {/* <div className="div-center">Product id: {params.id}</div> */}
       <div className="div-center">Product id: {id}</div>
       {/* taking product-id from the link (http://localhost:3000/products/1234), and using it to show other product data */}
-      <div className="div-center">...</div>
       {/* <ProductSection /> */}
       <ProductSection product={product} />
       {/* passing the data to child-component ProductSection */}

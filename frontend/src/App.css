@@ -48,6 +48,10 @@
 }
 
 .navbar {
+  position: fixed; /* or fixed */
+  top: 0;
+  z-index: 1000;
+  transition: transform 0.3s ease-in-out;
   background-color: #a2a6a7;
 }
 
@@ -56,16 +60,8 @@
   transition: transform 0.3s ease-in-out;
 }
 
-.navbar {
-  position: sticky; /* or fixed */
-  top: 0;
-  z-index: 1000;
-  transition: transform 0.3s ease-in-out;
-}
-
 .header-box {
   display: flex;
-  /* flex-direction: row; */
   align-items: center;
   justify-content: space-between;
   /* justify-content: space-between; - important so that left and right part can have empty space between */
@@ -120,6 +116,10 @@
   display: flex;
   align-items: center;
   justify-content: space-around;
+}
+
+.div-center2 {
+  text-align: center;
 }
 
 .flex-column {
@@ -473,7 +473,8 @@ button.qty-btn:hover {
   appearance: none;
 }
 
-.cart-main {
+.cart-main,
+.payment-section {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -517,7 +518,7 @@ button.qty-btn:hover {
   padding-right: 30px;
   background: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
 }
 
 img.cart-image.product-image {
@@ -543,7 +544,13 @@ img.cart-image.product-image {
 .cart-total-price {
   text-align: center;
   font-size: 1.1rem;
-  margin: 40px 20px;
+  margin: 50px auto 30px;
+  padding: 10px 16px;
+  color: #000000;
+  border: solid 1px #a2a6a7;
+  border-radius: 8px;
+  width: 200px;
+  background: #e6991d;
 }
 
 .cart-total-euros {
@@ -589,13 +596,27 @@ img.cart-image.product-image {
 }
 
 .home2-button {
-  margin: 40px 0 60px;
+  margin: 20px 0 40px;
 }
 
 .arrow {
   font-size: 1.2rem;
   color: #e6991d;
 }
+
+.margin-bottom2 {
+  margin-bottom: 40px;
+}
+
+.orange-letters {
+  display: inline;
+  margin: 0;
+  padding: 0;
+  color: #e6991d;
+  margin-left: 1px;
+  margin-right: 1px;
+}
+
 
 @media (max-width: 1465px) {
   .categories,
@@ -647,6 +668,10 @@ img.cart-image.product-image {
     gap: 16px;
     width: auto;
   }
+  .header-top-center-small {
+    padding-top: 70px;
+    /* important, because navbar-position is fixed, so in smaller resolution would cover this element below, if it doesn't have a padding-top */
+  }
 }
 
 @media (max-width: 1060px) {
@@ -663,6 +688,9 @@ img.cart-image.product-image {
     justify-content: center;
     gap: 16px;
     padding: 4px;
+  }
+  .header-top-center-small {
+    padding-top: 100px;
   }
 }
 
@@ -736,5 +764,8 @@ img.cart-image.product-image {
   }
   .item-card {
     height: 500px;
+  }
+  .header-top-center-small {
+    padding-top: 170px;
   }
 }

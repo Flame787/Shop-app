@@ -19,13 +19,16 @@ export default function ProductsList() {
 
   return (
     <>
-      <div className="div-center products-category">
+      <h3 className="div-center2 main-title2">
         Products in this category:
-      </div>
+        {selectedCategory && (
+          <span className="orange-letters"> {selectedCategory.name}</span>
+        )}
+      </h3>
 
       {selectedCategory ? (
         <CategoryItems
-          categoryId={selectedCategory}
+          categoryId={selectedCategory.id}
           // onItemSelected={(id) => console.log("Parent has recieved id:", id)}
           onItemSelected={handleItemSelected}
         />
