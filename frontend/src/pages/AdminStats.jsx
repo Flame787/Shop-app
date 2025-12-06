@@ -5,7 +5,10 @@ export default function AdminStats() {
   return (
     <>
       {/* <AdminHeader /> */}
-      <div className="div-center">This is Admin home page, with stats</div>
+
+      <h3 className="div-center main-title2">
+        This is Admin home page, with stats
+      </h3>
       <div className="div-center">...</div>
       <div className="div-center">...</div>
       {/* <AdminFooter /> */}

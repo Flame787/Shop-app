@@ -11,7 +11,7 @@ import CartButton from "../Cart/CartButton";
 import CategoriesBox from "../Category/CategoriesBox";
 
 export default function Header({ onSelectCategory, selectedCategory }) {
-  // Header-komponent is just a middleman, passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper 
+  // Header-komponent is just a middleman, passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper
   // -> lifting the state up to parent-component
 
   useEffect(() => {

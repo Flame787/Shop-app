@@ -62,7 +62,10 @@ export default function CategoriesBox({ onSelectCategory, selectedCategory }) {
                     // console.log("Clicked category:", i + 1);   // - older version, for Array
                     console.log("Clicked category:", categ.category_id);
                     // onSelectCategory(i + 1);     // - older version, for Array with categories numbers
-                    onSelectCategory(categ.category_id);
+                    onSelectCategory({
+                      id: categ.category_id,
+                      name: categ.category_name,
+                    });
                     // on click - calling the onSelectCategory()-function & passing an argument
                     navigate("/products");
                     // on category select - navigate to the Products page: http://localhost:3000/products

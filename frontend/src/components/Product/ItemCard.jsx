@@ -52,7 +52,7 @@ export default function ItemCard({
       toast(
         <div>
           <span className="checkmark">✓</span>{" "}
-          <span className="toast-itemname">{name}</span> added to cart
+          <span className="toast-itemname">{name} </span>({qty}) added to cart
         </div>
       );
     } catch (error) {

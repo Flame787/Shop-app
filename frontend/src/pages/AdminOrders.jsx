@@ -5,7 +5,7 @@ export default function AdminOrders() {
   return (
     <>
       {/* <AdminHeader /> */}
-      <div className="div-center">This is Admin Orders page</div>
+      <h3 className="div-center main-title2">This is Admin Orders page</h3>
       <div className="div-center">...</div>
       <div className="div-center">...</div>
       {/* <AdminFooter /> */}
