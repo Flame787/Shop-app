@@ -1,14 +1,17 @@
 export default function CompanyTitle() {
   return (
-    <div className="div-center flex-column">
+    <div className="div-center flex-column logo-background">
       <img
-        src="https://static.vecteezy.com/system/resources/previews/046/593/914/non_2x/creative-logo-design-for-real-estate-company-vector.jpg"
+        src="/logo1orange.png"
         alt="Company Logo"
         height="80"
         width="80"
         style={{ objectFit: "contain" }}
       ></img>
-      <div className="title-text">Company Title</div>
+      <div className="logo-text">
+        <span className="orange-letters">Smart</span>Space{" "}
+        <span className="orange-letters">Studio</span>
+      </div>
     </div>
   );
 }
