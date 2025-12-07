@@ -1,4 +1,4 @@
-import CompanyTitle from "./CompanyTitle";
+// import CompanyTitle from "./CompanyTitle";
 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEnvelope } from "@fortawesome/free-solid-svg-icons";
@@ -10,11 +10,15 @@ export default function Footer() {
   return (
     <>
       <div id="footer">
-
         <div className="four-footer-sections">
-
           <div className="footer-quarter footer-logo">
-            <CompanyTitle className="company-title1" />
+            <img
+              src="/logo3orange.png"
+              alt="Company Logo"
+              height="220"
+              width="auto"
+              // style={{ objectFit: "contain" }}
+            ></img>
           </div>
           <div className="footer-quarter">
             <div>
@@ -45,32 +49,33 @@ export default function Footer() {
 
           <div className="footer-quarter">
             <div>
-              <h3 className="margin-bottom">For customers</h3>
+              <h3 className="margin-bottom">Customers</h3>
             </div>
             <div className="footer-text">
               <p>
-                <a href="/shipping">
-                  <span className="visit bold">Shipping Information</span>
-                </a>
-              </p>
-              <p>
-                <a href="/returns">
-                  <span className="visit bold">Returns & Exchanges</span>
-                </a>
-              </p>
-              <p>
                 <a href="/payment-methods">
-                  <span className="visit bold">Payment Methods</span>
+                  <span className="visit bold">Payment methods</span>
+                </a>
+              </p>
+              <p>
+                <a href="/shipping">
+                  <span className="visit bold">Shipping information</span>
                 </a>
               </p>
               <p>
                 <a href="/order-tracking">
-                  <span className="visit bold">Order Tracking</span>
+                  <span className="visit bold">Order tracking</span>
                 </a>
               </p>
               <p>
+                <a href="/returns">
+                  <span className="visit bold">Returns & exchanges</span>
+                </a>
+              </p>
+
+              <p>
                 <a href="/support">
-                  <span className="visit bold">Customer Support</span>
+                  <span className="visit bold">Customer support</span>
                 </a>
               </p>
               <p>
@@ -96,23 +101,23 @@ export default function Footer() {
                 </a>
               </p>
               <p>
-                <a href="/signup">
+                <a href="/sign-up">
                   <span className="visit bold">Sign up</span>
                 </a>
               </p>
               <p>
-                <a href="/my-orders">
-                  <span className="visit bold">My orders</span>
+                <a href="/account">
+                  <span className="visit bold">My account</span>
                 </a>
               </p>
               <p>
-                <a href="/my-favorites">
-                  <span className="visit bold">My favorites</span>
+                <a href="/cart">
+                  <span className="visit bold">My cart</span>
                 </a>
               </p>
               <p>
-                <a href="/help">
-                  <span className="visit bold">Help</span>
+                <a href="/prev-orders">
+                  <span className="visit bold">Previous orders</span>
                 </a>
               </p>
             </div>
@@ -161,7 +166,6 @@ export default function Footer() {
             </a>
           </div>
         </div>
-        
       </div>
 
       {/* <div>Home page</div> */}

@@ -104,7 +104,7 @@
 }
 
 .search-box {
-  margin-top: 30px;
+  margin-top: 50px;
   margin-bottom: 10px;
 }
 
@@ -633,6 +633,7 @@ img.cart-image.product-image {
   justify-content: space-around;
   width: 100%;
   text-align: center;
+  flex-wrap: wrap;
 }
 
 .footer-quarter {
@@ -654,8 +655,7 @@ img.cart-image.product-image {
 
 .footer-quarter.footer-logo img {
   background-color: transparent;
-  height: 140px;
-  /* width: 200px; */
+  border-radius: 8px;
 }
 
 .footer-text {
@@ -709,6 +709,20 @@ img.cart-image.product-image {
 .author {
   /* margin-left: 100px; */
   justify-content: center;
+}
+
+.logo-background {
+  /* background-color: #424242; */
+  /* background: linear-gradient(145deg, #2d2d2d, #3c3c3c); */
+  background-color: #727272;
+  color: white;
+  padding: 3px 10px;
+  border-radius: 8px;
+  font-size: 1.1rem;
+}
+
+.logo-text {
+  padding: 0 0 10px;
 }
 
 @media (max-width: 1465px) {
@@ -765,6 +779,15 @@ img.cart-image.product-image {
     padding-top: 70px;
     /* important, because navbar-position is fixed, so in smaller resolution would cover this element below, if it doesn't have a padding-top */
   }
+  .search-box {
+  margin-top: 30px;
+  }
+}
+
+@media (max-width: 1374px) {
+  .footer-quarter {
+    margin: 20px 20px;
+  }
 }
 
 @media (max-width: 1060px) {
@@ -784,12 +807,6 @@ img.cart-image.product-image {
   }
   .header-top-center-small {
     padding-top: 100px;
-  }
-}
-
-@media (max-width: 974px) {
-  .footer-quarter {
-    margin: 20px 20px;
   }
 }
 
@@ -829,6 +846,10 @@ img.cart-image.product-image {
   .cart-remove-button {
     text-align: center;
   }
+  .footer-quarter,
+  .bold {
+    font-size: 0.85rem;
+  }
 }
 
 @media (max-width: 548px) {
@@ -850,6 +871,9 @@ img.cart-image.product-image {
 
   .proceed-button {
     margin-bottom: 50px;
+  }
+  .footer-quarter {
+    margin: 10px 10px;
   }
 }
 
