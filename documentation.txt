@@ -254,7 +254,133 @@ toast(
 Also added catch-error notification to ItemCard, if item cannot be added 
 (test: simply comment out this line in CartContext: addItem: addItem, - so adding will not be possible).
 
--------------------
+---------------------------------------
+
+Search-functionallity:
+
+server.js:
+
+- added new (8th) API to the route "/api/search/items"
+- test example: http://localhost:5000/api/items/search?query=chair 
+
+RouterLayout.jsx:
+
+// state for setting a searchWord:
+  const [searchWord, setSearchWord] = useState("");
+
+  useEffect(() => {
+    // every time a route changes, we reset searchWord to "", so Outlet-pages can be rendered (instead of search-results):
+    setSearchWord("");
+  }, [location]);
+
+ <Header
+        onSelectCategory={setSelectedCategory}
+        selectedCategory={selectedCategory}
+        onSearch={setSearchWord}
+      />
+  <main style={{ minHeight: "80vh" }}>
+        {/* pushes footer down, even if it's not much content on the page */}
+
+        {/* If there is a Searchword, then SearchItems-component renders (showing search-results), but Outlet (other pages) will not be shown.
+But if searchWord is empty, then Outlet renders. searchWord is passed to Outlet, so that all pages haveaccess to this value. 
+Then any of the pages inherits what was written in the input, or can reset the input. */}
+        {searchWord ? (
+          <SearchItems
+            searchWord={searchWord}
+            onItemSelected={(id) => console.log("Selected:", id)}
+          />
+        ) : (
+          <Outlet context={{ selectedCategory, searchWord, products }} />
+        )}
+        {/* using outlet context from React router and sending prop-value to all children pages of this wrapper */}
+      </main>
+
+- SearchItems-component is used to show RESULTS of the Search: it gets data (searchWord) from parent (RootLayout.jsx)
+
+SearchItems.jsx:
+
+export default function SearchItems({ searchWord }) {
+  const navigate = useNavigate();
+  const { data: items = [], isLoading, isError, error } = useQuery({
+    queryKey: ["items", searchWord], 
+    queryFn: async () => {            // queryFunction (fetch-request to new API)
+      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/search/items?query=${trimmedQuery}`);
+      return res.data.data;
+    },
+    enabled: !!trimmedQuery && onlyLetters.test(trimmedQuery), // start request only if input is valid!
+  });
+
+  return (
+    <div className="...">
+      {items.map((item) => (         // mapping through the list of search-results 
+        <ItemCard                    // & creating <ItemCard> for every found product
+          key={item.item_id}
+          id={item.item_id}
+          name={highlightText(item.name, searchWord)}
+          description={highlightText(item.description, searchWord)} ...
+          onClick={() => navigate(`/products/${item.item_id}`)}
+        />
+      ))}
+    </div>
+  );
+}
+
+Header.jsx (child-component of RootLayout.jsx)
+
+export default function Header({onSelectCategory, selectedCategory, onSearch }){
+  ...
+  return ( ...
+    <SearchBox onSearch={onSearch} /> ... ) }  
+   //  passing the setter-function (onSearch={setSearchWord}) as prop from parent RootLayout.jsx via Header.jsx to child-component SearchBox.jsx  
+
+// onSearch is the setter-function from parent-component RootLayout.jsx (onSearch={setSearchWord} - setting the state to newly entered input)
+
+
+SearchBox.jsx:
+
+- child-component of Header.jsx
+- used for entering input into Search-field:
+
+export default function SearchBox({ onSearch }) {
+  const [query, setQuery] = useState("");
+
+  function handleChange(event) {
+    setQuery(event.target.value);
+  }
+
+  // on button-click, we trigger search-event, which we got as prop from parent-component Header.jsx:
+  function handleSearch() {
+    onSearch(query);         
+    // sends event.target.value to the parent-component Header, and then to RootLayout, which can render SearchItems  (= search-results)
+  }
+
+  // trigger 'handleSearch' function when Enter-key is pressed:
+  function handleKeyDown(event) {
+    if (event.key === "Enter") {
+      handleSearch();
+    }
+  }
+
+  return (
+    <>
+      <div className="...">
+        <label className="...">Search for products:</label>
+        <input
+          className="..."
+          placeholder="What are you looking for?"
+          value={query}
+          onChange={handleChange}
+          onKeyDown={handleKeyDown}
+        ></input>
+        <button className="..." onClick={handleSearch}>Search</button>
+      </div>
+    </>
+  );
+}
+
+
+
+---------------------------------------------------------------------------------------
 
 To do:
 
@@ -266,9 +392,13 @@ To do:
 
 + dodati Footer
 
-- srediti ponašanje footera na manjim rezolucijama
++ srediti ponašanje footera na manjim rezolucijama
 
-- sortiranje, filtriranje, searchanje
++ searchanje & search-validation
+
+- dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
+
+- sortiranje, filtriranje
 
 - login-Modal za username & password
 

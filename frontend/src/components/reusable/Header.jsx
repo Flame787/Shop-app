@@ -10,7 +10,11 @@ import AccountButton from "../LoginAccount/AccountButton";
 import CartButton from "../Cart/CartButton";
 import CategoriesBox from "../Category/CategoriesBox";
 
-export default function Header({ onSelectCategory, selectedCategory }) {
+export default function Header({
+  onSelectCategory,
+  selectedCategory,
+  onSearch,   // onSearch is the setter-function from parent-component RootLayout.jsx
+}) {
   // Header-komponent is just a middleman, passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper
   // -> lifting the state up to parent-component
 
@@ -73,7 +77,8 @@ export default function Header({ onSelectCategory, selectedCategory }) {
         <CompanyTitle className="header-box-item company-title2" />
       </div>
 
-      <SearchBox />
+      <SearchBox onSearch={onSearch} />
+      {/* passing the setter-function (onSearch={setSearchWord}) as prop from parent RootLayout.jsx via Header.jsx to child-component SearchBox.jsx */}
 
       {/* <div className="header-box"></div> */}
       <CategoriesBox
