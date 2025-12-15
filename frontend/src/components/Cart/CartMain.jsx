@@ -61,22 +61,30 @@ export default function CartMain() {
       <section className="cart-main div-center">
         <div className="cart-items-info">
           <h3 className="main-title2 div-center2">
-            Selected products (<span className="orange-letters">{totalCartItems}</span>):
+            Selected products (
+            <span className="orange-letters">{totalCartItems}</span>):
           </h3>
           <ul>
             {cartCtx.items.map((item) => (
               <li key={item.id} className="cart-item">
                 <div className="cart-item-picture item-image">
-                  <img
-                    src={item.picture}
-                    alt={item.name}
-                    className="cart-image product-image"
-                  />
+                  <NavLink to={`/products/${item.id}`}>
+                    <img
+                      src={item.picture}
+                      alt={item.name}
+                      className="cart-image product-image"
+                    />
+                  </NavLink>
                 </div>
 
                 <div className="cart-all-text">
                   <div className="cart-main-part">
-                    <div className="cart-item-name">{item.name}</div>
+                    <NavLink
+                      to={`/products/${item.id}`}
+                      className="nav-cart-item-name"
+                    >
+                      <div className="cart-item-name">{item.name}</div>
+                    </NavLink>
 
                     <div className="cart-price">
                       Price:{" "}

@@ -72,7 +72,7 @@ app.get("/api/items/:id", async (req, res) => {
       });
     }
 
-    console.log(rows[0]);   // will write full product-object (based on selected ID) in backend console
+    console.log(rows[0]); // will write full product-object (based on selected ID) in backend console
 
     res.status(200).json({
       success: true,
@@ -88,7 +88,7 @@ app.get("/api/items/:id", async (req, res) => {
   }
 });
 
-/* test 1st API: http://localhost:5000/api/items/2 - should return the item with ID 2
+/* test 2nd API: http://localhost:5000/api/items/2 - should return the item with ID 2
  
 */
 
@@ -271,7 +271,6 @@ app.delete("/api/items/:id", async (req, res) => {
       message: `Item with id ${id} deleted from the base.`,
       deletedId: id,
     });
-
   } catch (error) {
     console.log("Error deleting item:", error);
     res.status(500).json({
@@ -326,7 +325,9 @@ app.get("/api/items/category/:categoryId", async (req, res) => {
 app.get("/api/categories", async (req, res) => {
   try {
     const pool = await poolPromise;
-    const [rows] = await pool.query("SELECT category_id, category_name FROM categories");
+    const [rows] = await pool.query(
+      "SELECT category_id, category_name FROM categories"
+    );
 
     res.status(200).json({
       success: true,
@@ -341,3 +342,72 @@ app.get("/api/categories", async (req, res) => {
     });
   }
 });
+
+// 8th API: GET - get items (filter) by searchWord:
+app.get("/api/search/items", async (req, res) => {
+  try {
+    console.log("req.query:", req.query);
+
+    // pulling searchWord from the query-parameters in the URL:
+    const rawQuery = req.query.query || "";
+    const searchWord = rawQuery.trim().toLowerCase();
+
+    // If empty string - throw error 400 right away:
+    if (!searchWord) {
+      // if empty string, returns 400
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required.",
+      });
+    }
+
+    // Allow only letters (a–z, including diacritics)
+    // \p{L} = any letter in Unicode
+    const onlyLetters = /^[\p{L}]+$/u;
+    if (!onlyLetters.test(searchWord)) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query must contain only letters.",
+      });
+    }
+
+    // If validation has passed:
+    const pool = await poolPromise;
+
+    // function escapeRegex(word) {
+    //   return word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // }
+    // // . becomes literal dot, + becomes plus sign, * becomes asterisk etc, and not sql-regex special characters
+
+    // const safeWord = escapeRegex(searchWord.toLowerCase());
+
+    const [rows] = await pool.query(
+      `SELECT * FROM items
+   WHERE LOWER(name) REGEXP ?    
+      OR LOWER(description) REGEXP ?
+      OR LOWER(tags) REGEXP ?`,
+      // [
+      //   "\\b" + searchWord.toLowerCase() + "\\b",
+      //   "\\b" + searchWord.toLowerCase() + "\\b",
+      //   "\\b" + searchWord.toLowerCase() + "\\b",
+      // ]
+      [`\\b${searchWord}\\b`, `\\b${searchWord}\\b`, `\\b${searchWord}\\b`]
+    );
+    // REGEXP-query - finds only whole words that match searchWord in name, description or tag
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+    console.log("Search route hit:", req.query);
+  } catch (error) {
+    console.error("Error searching items:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error, try again",
+      error: error.message,
+    });
+  }
+});
+
+/* test: http://localhost:5000/api/items/search?query=chair */
