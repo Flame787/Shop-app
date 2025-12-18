@@ -7,7 +7,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useNavigate } from "react-router-dom";
 import ItemCard from "../Product/ItemCard";
 
-export default function SearchItems({ searchWord, onItemSelected }) {
+export default function SearchItems({
+  searchWord,
+  onItemSelected,
+  sortCriteria,
+}) {
   //   const { searchWord } = useOutletContext();
   const navigate = useNavigate();
 
@@ -20,10 +24,17 @@ export default function SearchItems({ searchWord, onItemSelected }) {
     isError,
     error,
   } = useQuery({
-    queryKey: ["items", searchWord],
+    queryKey: ["items", searchWord, sortCriteria],
     queryFn: async () => {
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/search/items?query=${trimmedQuery}`
+        // `${process.env.REACT_APP_API_URL}/api/search/items?query=${trimmedQuery}`
+        `${process.env.REACT_APP_API_URL}/api/search/items`,
+        {
+          params: {
+            query: trimmedQuery,
+            sort: sortCriteria, 
+          },
+        }
       );
 
       console.log("Search results:", res.data.data);

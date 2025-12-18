@@ -3,14 +3,21 @@ import axios from "axios";
 import { useQuery } from "@tanstack/react-query";
 import ItemCard from "../Product/ItemCard";
 
-export default function CategoryItems({ categoryId, onItemSelected }) {
+export default function CategoryItems({
+  categoryId,
+  onItemSelected,
+  sortCriteria,
+}) {
   // NEW - React Query handling fetch-request, caching and refetching:
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["items", categoryId], // unique key for caching data
+    queryKey: ["items", categoryId, sortCriteria], // unique key for caching data
     queryFn: async () => {
       // query-function, API-request for data
       const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`
+        `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`,
+        {
+          params: { sort: sortCriteria },
+        }
       );
       return res.data.data;
     },
