@@ -398,7 +398,7 @@ To do:
 
 - dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
 
-- sortiranje, filtriranje
+- sortiranje (by price: lower-higher)
 
 - login-Modal za username & password
 

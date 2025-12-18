@@ -4,7 +4,7 @@ import CategoryItems from "../components/Category/CategoryItems";
 
 export default function ProductsList() {
   // consuming context (selectedCategory) as one of the pages wrapped with Rootlayout:
-  const { selectedCategory } = useOutletContext();
+  const { selectedCategory, sortCriteria } = useOutletContext();
 
   // enables navigation to another page -> Product.jsx:
   const navigate = useNavigate();
@@ -31,6 +31,7 @@ export default function ProductsList() {
           categoryId={selectedCategory.id}
           // onItemSelected={(id) => console.log("Parent has recieved id:", id)}
           onItemSelected={handleItemSelected}
+          sortCriteria={sortCriteria}
         />
       ) : (
         <p className="div-center">Please select a category above.</p>

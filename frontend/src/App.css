@@ -749,6 +749,26 @@ mark {
   padding: 0 2px;
 }
 
+.sort-dropdown label {
+  margin-bottom: 8px;
+}
+
+.sort-select {
+  width: 150px;
+  height: 25px;
+  border: 2px solid #575757;
+  border-radius: 6px;
+  padding: 3px;
+}
+
+/* .sort-select.is-default {
+  color: #575757;
+} */
+
+.sort-select option.default-option {
+  color: #575757;
+}
+
 @media (max-width: 1465px) {
   .categories,
   .category-items-div {

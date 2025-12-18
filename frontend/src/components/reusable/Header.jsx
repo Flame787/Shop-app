@@ -9,11 +9,14 @@ import LogInOutButton from "../LoginAccount/LogInOutButton";
 import AccountButton from "../LoginAccount/AccountButton";
 import CartButton from "../Cart/CartButton";
 import CategoriesBox from "../Category/CategoriesBox";
+import SortDropDown from "./SortDropdown";
 
 export default function Header({
   onSelectCategory,
   selectedCategory,
-  onSearch,   // onSearch is the setter-function from parent-component RootLayout.jsx
+  onSearch, // onSearch is the setter-function from parent-component RootLayout.jsx, related to search-function
+  onSort, // onSort is the setter-function from parent-component RootLayout.jsx, related to sort-function
+  sortCriteria,  // getting the value also, not just the setter-function, from parent-component RootLayout.jsx
 }) {
   // Header-komponent is just a middleman, passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper
   // -> lifting the state up to parent-component
@@ -86,6 +89,8 @@ export default function Header({
         selectedCategory={selectedCategory}
       />
       {/* passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to the parent */}
+      {/* New: sorting component, getting setter-function and value from RootLayout via Header: */}
+      <SortDropDown onSort={onSort} selectedOption={sortCriteria} />
     </header>
   );
 }

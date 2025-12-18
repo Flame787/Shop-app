@@ -22,9 +22,39 @@ app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 
 app.get("/api/items", async (req, res) => {
   try {
+    const { sort } = req.query;
+    let sql = "SELECT * FROM items";
+
+    // sorting items depending on selected criteria in sort-dropdown:
+    switch (sort) {
+      case "a-z":
+        sql += " ORDER BY name ASC";
+        break;
+      case "z-a":
+        sql += " ORDER BY name DESC";
+        break;
+      case "price-asc":
+        sql += " ORDER BY price ASC";
+        break;
+      case "price-desc":
+        sql += " ORDER BY price DESC";
+        break;
+      case "newest":
+        sql += " ORDER BY item_id DESC"; // ordering from last added items (higher item_id) to older items (smaller item_id)
+        break;
+      case "bestseller":
+        sql += " ORDER BY sold_count DESC";
+        break;
+      default:
+        sql += " ORDER BY item_id ASC"; // default sorting
+    }
+
     const pool = await poolPromise;
-    const [rows] = await pool.query("SELECT * FROM items");
+    // const [rows] = await pool.query("SELECT * FROM items");
+    const [rows] = await pool.query(sql);
+
     console.log(rows);
+
     res.status(200).json({
       success: true,
       data: rows,
@@ -44,6 +74,13 @@ app.get("/api/items", async (req, res) => {
     "success": true,
     "data": []
   }
+
+  test sorting in the 1st API:
+
+  http://localhost:5000/api/items?sort=a-z - OK
+  http://localhost:5000/api/items?sort=price-desc - OK
+  http://localhost:5000/api/items?sort=newest - OK
+  http://localhost:5000/api/items?sort=bestseller - "Server error, try again", "error": "Unknown column 'sold_count' in 'order clause'"
 
 */
 
@@ -285,6 +322,7 @@ app.delete("/api/items/:id", async (req, res) => {
 app.get("/api/items/category/:categoryId", async (req, res) => {
   try {
     const { categoryId } = req.params;
+    const { sort } = req.query;
 
     if (isNaN(categoryId)) {
       return res.status(400).json({
@@ -293,11 +331,37 @@ app.get("/api/items/category/:categoryId", async (req, res) => {
       });
     }
 
+    let sql = "SELECT * FROM items WHERE category_id = ?";
+
+    switch (sort) {
+      case "a-z":
+        sql += " ORDER BY name ASC";
+        break;
+      case "z-a":
+        sql += " ORDER BY name DESC";
+        break;
+      case "price-asc":
+        sql += " ORDER BY price ASC";
+        break;
+      case "price-desc":
+        sql += " ORDER BY price DESC";
+        break;
+      case "newest":
+        sql += " ORDER BY item_id DESC";
+        break;
+      case "bestseller":
+        sql += " ORDER BY sold_count DESC";
+        break;
+      default:
+        sql += " ORDER BY item_id ASC";
+    }
+
     const pool = await poolPromise;
-    const [rows] = await pool.query(
-      "SELECT * FROM items WHERE category_id = ?",
-      [categoryId]
-    );
+    // const [rows] = await pool.query(
+    //   "SELECT * FROM items WHERE category_id = ?",
+    //   [categoryId]
+    // );
+    const [rows] = await pool.query(sql, [categoryId]);
 
     res.status(200).json({
       success: true,
@@ -349,8 +413,11 @@ app.get("/api/search/items", async (req, res) => {
     console.log("req.query:", req.query);
 
     // pulling searchWord from the query-parameters in the URL:
-    const rawQuery = req.query.query || "";
-    const searchWord = rawQuery.trim().toLowerCase();
+    // const rawQuery = req.query.query || "";
+    // const searchWord = rawQuery.trim().toLowerCase();
+
+    const { query, sort } = req.query;
+    const searchWord = (query || "").trim().toLowerCase();
 
     // If empty string - throw error 400 right away:
     if (!searchWord) {
@@ -371,6 +438,37 @@ app.get("/api/search/items", async (req, res) => {
       });
     }
 
+    let sql = `
+      SELECT * FROM items
+      WHERE LOWER(name) REGEXP ?
+         OR LOWER(description) REGEXP ?
+         OR LOWER(tags) REGEXP ?
+    `;
+
+    // added ORDER BY depending on sort-criteria:
+    switch (sort) {
+      case "a-z":
+        sql += " ORDER BY name ASC";
+        break;
+      case "z-a":
+        sql += " ORDER BY name DESC";
+        break;
+      case "price-asc":
+        sql += " ORDER BY price ASC";
+        break;
+      case "price-desc":
+        sql += " ORDER BY price DESC";
+        break;
+      case "newest":
+        sql += " ORDER BY item_id DESC"; // ili date_added ako imaš kolonu
+        break;
+      case "bestseller":
+        sql += " ORDER BY sold_count DESC"; // pazi da kolona postoji!
+        break;
+      default:
+        sql += " ORDER BY item_id ASC";
+    }
+
     // If validation has passed:
     const pool = await poolPromise;
 
@@ -382,15 +480,20 @@ app.get("/api/search/items", async (req, res) => {
     // const safeWord = escapeRegex(searchWord.toLowerCase());
 
     const [rows] = await pool.query(
-      `SELECT * FROM items
-   WHERE LOWER(name) REGEXP ?    
-      OR LOWER(description) REGEXP ?
-      OR LOWER(tags) REGEXP ?`,
+      sql,
+
+      //   const [rows] = await pool.query(
+      //     `SELECT * FROM items
+      //  WHERE LOWER(name) REGEXP ?
+      //     OR LOWER(description) REGEXP ?
+      //     OR LOWER(tags) REGEXP ?`,
+
       // [
       //   "\\b" + searchWord.toLowerCase() + "\\b",
       //   "\\b" + searchWord.toLowerCase() + "\\b",
       //   "\\b" + searchWord.toLowerCase() + "\\b",
       // ]
+
       [`\\b${searchWord}\\b`, `\\b${searchWord}\\b`, `\\b${searchWord}\\b`]
     );
     // REGEXP-query - finds only whole words that match searchWord in name, description or tag

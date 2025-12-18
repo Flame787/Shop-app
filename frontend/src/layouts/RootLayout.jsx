@@ -20,16 +20,27 @@ export default function RootLayout() {
   // state for setting a searchWord:
   const [searchWord, setSearchWord] = useState("");
 
+  const [sortCriteria, setSortCriteria] = useState("default");
+
   useEffect(() => {
     // every time a route changes, we reset searchWord to "", so Outlet-pages can be rendered instead of search-results:
     setSearchWord("");
+    setSortCriteria("default");
   }, [location]);
+
+  useEffect(() => {
+    console.log("Sort criteria changed:", sortCriteria);
+  }, [sortCriteria]);
 
   // fetching all products with useQuery:
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products"],
+    queryKey: ["products", sortCriteria], // now 'queryKey' depends on 'sortCriteria' too, not just on fetched products
     queryFn: async () => {
-      const res = await axios.get(`${process.env.REACT_APP_API_URL}/api/items`);
+      console.log("Fetching with sort:", sortCriteria);
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/items`,
+        { params: { sort: sortCriteria } }
+      );
       return res.data.data;
     },
   });
@@ -41,6 +52,8 @@ export default function RootLayout() {
         onSelectCategory={setSelectedCategory}
         selectedCategory={selectedCategory}
         onSearch={setSearchWord}
+        onSort={setSortCriteria}
+        sortCriteria={sortCriteria} // important to pass the value also, not just the setter-function
       />
       {/* getting the value from it's child-component ProductsList, via Header-component - middleman (state lifted up) */}
 
@@ -54,10 +67,13 @@ Then any of the pages inherits what was written in the input, or can reset the i
         {searchWord ? (
           <SearchItems
             searchWord={searchWord}
+            sortCriteria={sortCriteria}
             onItemSelected={(id) => console.log("Selected:", id)}
           />
         ) : (
-          <Outlet context={{ selectedCategory, searchWord, products }} />
+          <Outlet
+            context={{ selectedCategory, searchWord, products, sortCriteria }}
+          />
         )}
         {/* using outlet context from React router and sending prop-value to all children pages of this wrapper */}
       </main>
