@@ -379,6 +379,171 @@ export default function SearchBox({ onSearch }) {
 }
 
 
+---------------------------------------
+
+Sort-functionallity:
+
+- complex: new component SortDropdown, lifting the state up, backend - adjusted APIs, Search vs. Outlet rendering...
+
+SortDropdown.jsx 
+
+- child-component of Header.jsx, which is child of RootLayout.jsx
+
+export default function SortDropDown({ onSort, selectedOption }) {   
+ // recieves the setter-function & state from the parent-component as props               
+
+// handler-function:
+  function handleChange(event) {
+    onSort(event.target.value);
+    // setter-function is recieved via 'onSort'-prop and sets the state to event.target.value - selected via user-interaction in this component
+    // lifting the state up, so no need to manage the state here in this child-component
+  }
+
+  return (
+    <div className="div-center sort-dropdown flex-column">
+      <label htmlFor="parameter">Sort by: </label>
+      <select
+        name="parameter"
+        id="parameter"
+        className="sort-select"
+        value={selectedOption}
+        // value is state-value, received from outer state in parent-component, but it also gets changed here in this component
+        onChange={handleChange}   // change-event is setting new state, and causing that the component re-renders, to reflect the changes
+      >
+        <option value="default" className="default-option">default</option>
+        <option value="a-z">A to Z</option>
+        <option value="z-a">Z to A</option>
+        <option value="price-asc">Price: low to high ↑</option>
+        <option value="price-desc">Price: high to low ↓</option>
+        <option value="newest">Newest</option>
+        <option value="bestseller">Best selling</option>
+      </select>
+    </div>
+  );
+}
+
+----
+
+Header.jsx
+
+- renders <SortDropDown> as it's last child-component
+- gets the setter-function 'onSort' and 'selectedOption'-state-value from RootLayout.jsx, and transfers them both to SortDropDown.jsx
+
+  <SortDropDown onSort={onSort} selectedOption={sortCriteria} />
+
+----
+
+RootLayout.jsx
+
+- contains separate state for sorting (saving info on which sorting-criteria was selected):
+
+ const [sortCriteria, setSortCriteria] = useState("default");
+
+  useEffect(() => {
+    // every time a route changes, we reset searchWord-state to "", so Outlet-pages can be rendered, instead of search-results
+    // when a route changes, we also reset sortCriteria-state to "default", so that sortCriteria no longer apply on a new page: default view again
+    setSearchWord("");
+    setSortCriteria("default");
+  }, [location]);
+
+// this useEffect is used just for logging if app is registering the sortCriteria-change correctly
+  useEffect(() => {
+    console.log("Sort criteria changed:", sortCriteria);
+  }, [sortCriteria]);
+
+
+ // fetching all products with useQuery:
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products", sortCriteria],   // now 'queryKey'-cache saves the 'sortCriteria' too, not just the fetched-products-list
+    queryFn: async () => {
+      console.log("Fetching with sort:", sortCriteria);   // test if sortCriteria is passed to fetching-function
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/items`,
+        { params: { sort: sortCriteria } }              // adding the query-parameter to url, e.g. http://localhost:5000/api/items?sort=a-z
+      );
+      return res.data.data;
+    },
+  });
+  if (isLoading) return <div className="loader"></div>;
+
+  return (
+    <>
+      <Header
+        onSelectCategory={setSelectedCategory}
+        selectedCategory={selectedCategory}
+        onSearch={setSearchWord}
+        onSort={setSortCriteria}       // passing the state-setter-function (setSortCriteria) in prop 'onSort' to the child-component Header.jsx
+        sortCriteria={sortCriteria}    // important to pass the sort-state-value also, not just the setter-function
+      />
+
+      <main>
+        {/* If there is a Searchword, then SearchItems-component renders (showing search-results), but Outlet (other pages) will not be shown.
+But if SearchWord is empty, then Outlet renders. SearchWord is passed to Outlet, so that all pages have access to this value. 
+Then any of the pages inherits what was written in the search-input, or can reset the search-input. */}    
+        {/* <SearchItems>-component is used to show RESULTS of the Search: it searches through ALL items, not just category-items.
+        This component receives state-data (searchWord) and state-setter-function (onItemSelected) from parent (RootLayout.jsx).
+        We also pass to <SearchItems> the sortCriteria-state in a prop, so we can sort just the filtered search-result-items through different criteria. */}
+        {searchWord ? (
+          <SearchItems
+            searchWord={searchWord}
+            sortCriteria={sortCriteria}
+            onItemSelected={(id) => console.log("Selected:", id)}
+          />
+        ) : (
+          <Outlet context={{ selectedCategory, searchWord, products, sortCriteria }} /> 
+          // passing all different states (including searchword and sortCriteria) via context to Outlet-components
+        )}
+        {/* using outlet-context from React Router and sending prop-value to all children pages of this wrapper.
+        Router-context is passed via Outlet-wrapper; it has nothing in common with Cart-context (= has it's own store & reducer-functions)!! */}
+      </main>)
+
+----
+
+Components wrapped in Outlet, that receive and consume the sortCriteria-state via Outlet-Router-Context:
+
+- ProductsList.jsx:
+
+ // consuming React-Router-context (selectedCategory- & sortCriteria-state), as one of the pages wrapped with Rootlayout and Outlet:
+  const { selectedCategory, sortCriteria } = useOutletContext();
+
+  return(
+   {selectedCategory ? (
+        <CategoryItems
+          categoryId={selectedCategory.id}
+          // onItemSelected={(id) => console.log("Parent has recieved id:", id)}
+          onItemSelected={handleItemSelected}
+          sortCriteria={sortCriteria}
+        />
+      ) : (
+        <p className="div-center">Please select a category above.</p>
+      )}
+  )
+
+- CategoryItems.jsx:
+
+export default function CategoryItems({
+  categoryId,
+  onItemSelected,
+  sortCriteria,
+}) {
+  // React Query handling fetch-request, caching and refetching:
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["items", categoryId, sortCriteria],     // unique key for caching data, also 'remembers' categoryId & sortCriteria
+    queryFn: async () => {
+      // query-function, API-request for data
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`,
+        {
+          params: { sort: sortCriteria },       // adding the query-parameter to url, e.g. http://localhost:5000/api/items/category/2?sort=a-z 
+        }
+      );
+      return res.data.data;
+    },
+    enabled: !!categoryId
+...})}
+
+
+
 
 ---------------------------------------------------------------------------------------
 
@@ -396,9 +561,11 @@ To do:
 
 + searchanje & search-validation
 
-- dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
++ sortiranje (by price: lower-higher i obrnuto, a-z, z-a, newest, bestseller)
 
-- sortiranje (by price: lower-higher)
+- dokumentirati kako funkcionira sortiranje (kompleksno: nova komponenta, lifting teh state up, backend-prilagođeni apiji i Search vs. Outlet)
+
+- dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
 
 - login-Modal za username & password
 

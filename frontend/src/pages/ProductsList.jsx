@@ -3,7 +3,7 @@ import { useOutletContext, useNavigate } from "react-router-dom";
 import CategoryItems from "../components/Category/CategoryItems";
 
 export default function ProductsList() {
-  // consuming context (selectedCategory) as one of the pages wrapped with Rootlayout:
+ // consuming React-Router-context (selectedCategory- & sortCriteria-state), as one of the pages wrapped with Rootlayout and Outlet:
   const { selectedCategory, sortCriteria } = useOutletContext();
 
   // enables navigation to another page -> Product.jsx:
@@ -13,7 +13,7 @@ export default function ProductsList() {
 
   function handleItemSelected(id) {
     console.log("Parent has received id:", id);
-    // navigacija na detaljnu stranicu proizvoda
+    // navigation to Product-page with all Product-details:
     navigate(`/products/${id}`);
   }
 
