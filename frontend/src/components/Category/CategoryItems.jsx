@@ -17,7 +17,7 @@ export default function CategoryItems({
         `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`,
         {
           params: { sort: sortCriteria },      // adding the query-parameter to url, e.g. http://localhost:5000/api/items/category/2?sort=a-z
-        }
+        }     
       );
       return res.data.data;
     },
