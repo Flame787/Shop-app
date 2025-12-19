@@ -20,26 +20,29 @@ export default function RootLayout() {
   // state for setting a searchWord:
   const [searchWord, setSearchWord] = useState("");
 
+  // state for sorting (saving info on which sorting-criteria was selected):
   const [sortCriteria, setSortCriteria] = useState("default");
 
   useEffect(() => {
-    // every time a route changes, we reset searchWord to "", so Outlet-pages can be rendered instead of search-results:
+    // every time a route changes, we reset searchWord-state to "", so Outlet-pages can be rendered, instead of search-results
+    // when a route changes, we also reset sortCriteria-state to "default", so that sortCriteria no longer apply on a new page: default view again
     setSearchWord("");
     setSortCriteria("default");
   }, [location]);
 
+  // this useEffect is used just for logging if app is registering the sortCriteria-change correctly
   useEffect(() => {
     console.log("Sort criteria changed:", sortCriteria);
   }, [sortCriteria]);
 
   // fetching all products with useQuery:
   const { data: products = [], isLoading } = useQuery({
-    queryKey: ["products", sortCriteria], // now 'queryKey' depends on 'sortCriteria' too, not just on fetched products
+    queryKey: ["products", sortCriteria], // now 'queryKey'-cache saves the 'sortCriteria' too, not just the fetched-products-list
     queryFn: async () => {
-      console.log("Fetching with sort:", sortCriteria);
+      console.log("Fetching with sort:", sortCriteria); // test if sortCriteria is passed to fetching-function
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/items`,
-        { params: { sort: sortCriteria } }
+        { params: { sort: sortCriteria } } // adding the query-parameter to url, e.g. http://localhost:5000/api/items?sort=a-z
       );
       return res.data.data;
     },
@@ -52,18 +55,20 @@ export default function RootLayout() {
         onSelectCategory={setSelectedCategory}
         selectedCategory={selectedCategory}
         onSearch={setSearchWord}
-        onSort={setSortCriteria}
-        sortCriteria={sortCriteria} // important to pass the value also, not just the setter-function
+        onSort={setSortCriteria} // passing the state-setter-function (setSortCriteria) in prop 'onSort' to the child-component Header.jsx
+        sortCriteria={sortCriteria} // important to pass the sort-state-value too, not just the setter-function
       />
-      {/* getting the value from it's child-component ProductsList, via Header-component - middleman (state lifted up) */}
+      {/* for search-state: getting the state-value from the child-component ProductsList, via Header-component - middleman (state lifted up) */}
 
       <main style={{ minHeight: "80vh" }}>
         {/* pushes footer down, even if it's not much content on the page */}
 
         {/* If there is a Searchword, then SearchItems-component renders (showing search-results), but Outlet (other pages) will not be shown.
-But if searchWord is empty, then Outlet renders. searchWord is passed to Outlet, so that all pages haveaccess to this value. 
-Then any of the pages inherits what was written in the input, or can reset the input. */}
-        {/* SearchItems-component is used to show RESULTS of the Search: it gets data (searchWord) and function (onItemSelected) from parent (RootLayout.jsx) */}
+But if SearchWord is empty, then Outlet renders. SearchWord is passed to Outlet, so that all pages have access to this value. 
+Then any of the pages inherits what was written in the search-input, or can reset the search-input. */}
+        {/* <SearchItems>-component is used to show RESULTS of the Search: it searches through ALL items, not just category-items.
+        This component receives state-data (searchWord) and state-setter-function (onItemSelected) from parent (RootLayout.jsx).
+        We also pass to <SearchItems> the sortCriteria-state in a prop, so we can sort just the filtered search-result-items through different criteria. */}
         {searchWord ? (
           <SearchItems
             searchWord={searchWord}
@@ -72,10 +77,10 @@ Then any of the pages inherits what was written in the input, or can reset the i
           />
         ) : (
           <Outlet
-            context={{ selectedCategory, searchWord, products, sortCriteria }}
+            context={{ selectedCategory, searchWord, products, sortCriteria }}  // passing all different states via context to Outlet-components
           />
         )}
-        {/* using outlet context from React router and sending prop-value to all children pages of this wrapper */}
+        {/* using outlet-context from React Router and sending prop-value to all children pages of this wrapper */}
       </main>
 
       <Footer />

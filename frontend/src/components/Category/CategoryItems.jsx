@@ -10,14 +10,14 @@ export default function CategoryItems({
 }) {
   // NEW - React Query handling fetch-request, caching and refetching:
   const { data: items = [], isLoading } = useQuery({
-    queryKey: ["items", categoryId, sortCriteria], // unique key for caching data
+    queryKey: ["items", categoryId, sortCriteria],   // unique key for caching data, also 'remembers' categoryId & sortCriteria
     queryFn: async () => {
       // query-function, API-request for data
       const res = await axios.get(
         `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`,
         {
-          params: { sort: sortCriteria },
-        }
+          params: { sort: sortCriteria },      // adding the query-parameter to url, e.g. http://localhost:5000/api/items/category/2?sort=a-z
+        }     
       );
       return res.data.data;
     },

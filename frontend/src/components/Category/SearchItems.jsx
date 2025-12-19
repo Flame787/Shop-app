@@ -32,7 +32,7 @@ export default function SearchItems({
         {
           params: {
             query: trimmedQuery,
-            sort: sortCriteria, 
+            sort: sortCriteria,      // adding the query-parameter to url, e.g. http://localhost:5000/api/search/items?query=blue&sort=a-z 
           },
         }
       );

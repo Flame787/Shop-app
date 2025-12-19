@@ -379,6 +379,393 @@ export default function SearchBox({ onSearch }) {
 }
 
 
+---------------------------------------
+
+Sort-functionallity:
+
+- complex: new component SortDropdown, lifting the state up, backend - adjusted APIs, Search vs. Outlet rendering...
+
+Backend: server.js - modified the APIs:
+
+// 1st API: GET - Get all items from the base:
+
+app.get("/api/items", async (req, res) => {
+  try {
+    const { sort } = req.query;
+    let sql = "SELECT * FROM items";
+
+    // sorting items depending on selected criteria in sort-dropdown:
+    switch (sort) {
+      case "a-z":
+        sql += " ORDER BY name ASC";
+        break;
+      case "z-a":
+        sql += " ORDER BY name DESC";
+        break;
+      case "price-asc":
+        sql += " ORDER BY price ASC";
+        break;
+      case "price-desc":
+        sql += " ORDER BY price DESC";
+        break;
+      case "newest":
+        sql += " ORDER BY item_id DESC"; // ordering from last added items (higher item_id) to older items (smaller item_id)
+        break;
+      case "bestseller":
+        sql += " ORDER BY sold_count DESC";
+        break;
+      default:
+        sql += " ORDER BY item_id ASC"; // default sorting
+    }
+...}})
+
+test sorting in the 1st API:
+
+  http://localhost:5000/api/items?sort=a-z - OK
+  http://localhost:5000/api/items?sort=price-desc - OK
+  http://localhost:5000/api/items?sort=newest - OK
+  http://localhost:5000/api/items?sort=bestseller -
+
+----
+
+// 6th API: GET - get items by category ID
+app.get("/api/items/category/:categoryId", async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+    const { sort } = req.query;
+
+    if (isNaN(categoryId)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid category ID",
+      });
+    }
+
+    let sql = "SELECT * FROM items WHERE category_id = ?";
+
+    switch (sort) {
+      case "a-z":
+        sql += " ORDER BY name ASC";
+        break;
+      case "z-a":
+        sql += " ORDER BY name DESC";
+        break;
+      case "price-asc":
+        sql += " ORDER BY price ASC";
+        break;
+      case "price-desc":
+        sql += " ORDER BY price DESC";
+        break;
+      case "newest":
+        sql += " ORDER BY item_id DESC";
+        break;
+      case "bestseller":
+        sql += " ORDER BY sold_count DESC";
+        break;
+      default:
+        sql += " ORDER BY item_id ASC";
+    }
+
+...}})
+
+/* test 6th API: http://localhost:5000/api/items/category/1 or http://localhost:5000/api/items/category/5 
+- should return list of items as 'data' [] - inside are objects {} - one object {} for each item, with attributes and values (name, price...)
+{
+"success": true,
+"data": [ {}, {}, {}, {}, {} ...]
+}
+*/
+
+----
+
+// 8th API: GET - get items (filter) by searchWord:
+app.get("/api/search/items", async (req, res) => {
+  try {
+    console.log("req.query:", req.query);
+
+    // pulling searchWord from the query-parameters in the URL:
+    // const rawQuery = req.query.query || "";
+    // const searchWord = rawQuery.trim().toLowerCase();
+
+    const { query, sort } = req.query;
+    const searchWord = (query || "").trim().toLowerCase();
+
+    // If empty string - throw error 400 right away:
+    if (!searchWord) {
+      // if empty string, returns 400
+      return res.status(400).json({
+        success: false,
+        message: "Search query is required.",
+      });
+    }
+
+    // Allow only letters (a–z, including diacritics)
+    // \p{L} = any letter in Unicode
+    const onlyLetters = /^[\p{L}]+$/u;
+    if (!onlyLetters.test(searchWord)) {
+      return res.status(400).json({
+        success: false,
+        message: "Search query must contain only letters.",
+      });
+    }
+
+    let sql = `
+      SELECT * FROM items
+      WHERE LOWER(name) REGEXP ?
+         OR LOWER(description) REGEXP ?
+         OR LOWER(tags) REGEXP ?
+    `;
+
+    // added ORDER BY depending on sort-criteria:
+    switch (sort) {
+      case "a-z":
+        sql += " ORDER BY name ASC";
+        break;
+      case "z-a":
+        sql += " ORDER BY name DESC";
+        break;
+      case "price-asc":
+        sql += " ORDER BY price ASC";
+        break;
+      case "price-desc":
+        sql += " ORDER BY price DESC";
+        break;
+      case "newest":
+        sql += " ORDER BY item_id DESC"; // ili date_added ako imaš kolonu
+        break;
+      case "bestseller":
+        sql += " ORDER BY sold_count DESC"; // pazi da kolona postoji!
+        break;
+      default:
+        sql += " ORDER BY item_id ASC";
+    }
+
+    // If validation has passed:
+    const pool = await poolPromise;
+
+    // function escapeRegex(word) {
+    //   return word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    // }
+    // // . becomes literal dot, + becomes plus sign, * becomes asterisk etc, and not sql-regex special characters
+
+    // const safeWord = escapeRegex(searchWord.toLowerCase());
+
+    const [rows] = await pool.query(
+      sql,
+
+      [`\\b${searchWord}\\b`, `\\b${searchWord}\\b`, `\\b${searchWord}\\b`]
+    );
+    // REGEXP-query - finds only whole words that match searchWord in name, description or tag
+
+    res.status(200).json({
+      success: true,
+      data: rows,
+    });
+    console.log("Search route hit:", req.query);
+  } catch (error) {
+    console.error("Error searching items:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error, try again",
+      error: error.message,
+    });
+  }
+});
+
+/* test: http://localhost:5000/api/items/search?query=chair */
+
+
+-------
+
+Frontend:
+
+SortDropdown.jsx 
+
+- child-component of Header.jsx, which is child of RootLayout.jsx
+
+export default function SortDropDown({ onSort, selectedOption }) {   
+ // recieves the setter-function & state from the parent-component as props               
+
+// handler-function:
+  function handleChange(event) {
+    onSort(event.target.value);
+    // setter-function is recieved via 'onSort'-prop and sets the state to event.target.value - selected via user-interaction in this component
+    // lifting the state up, so no need to manage the state here in this child-component
+  }
+
+  return (
+    <div className="div-center sort-dropdown flex-column">
+      <label htmlFor="parameter">Sort by: </label>
+      <select
+        name="parameter"
+        id="parameter"
+        className="sort-select"
+        value={selectedOption}
+        // value is state-value, received from outer state in parent-component, but it also gets changed here in this component
+        onChange={handleChange}   // change-event is setting new state, and causing that the component re-renders, to reflect the changes
+      >
+        <option value="default" className="default-option">default</option>
+        <option value="a-z">A to Z</option>
+        <option value="z-a">Z to A</option>
+        <option value="price-asc">Price: low to high ↑</option>
+        <option value="price-desc">Price: high to low ↓</option>
+        <option value="newest">Newest</option>
+        <option value="bestseller">Best selling</option>
+      </select>
+    </div>
+  );
+}
+
+----
+
+Header.jsx
+
+- renders <SortDropDown> as it's last child-component
+- gets the setter-function 'onSort' and 'selectedOption'-state-value from RootLayout.jsx, and transfers them both to SortDropDown.jsx
+
+  <SortDropDown onSort={onSort} selectedOption={sortCriteria} />
+
+----
+
+RootLayout.jsx
+
+- contains separate state for sorting (saving info on which sorting-criteria was selected):
+
+ const [sortCriteria, setSortCriteria] = useState("default");
+
+  useEffect(() => {
+    // every time a route changes, we reset searchWord-state to "", so Outlet-pages can be rendered, instead of search-results
+    // when a route changes, we also reset sortCriteria-state to "default", so that sortCriteria no longer apply on a new page: default view again
+    setSearchWord("");
+    setSortCriteria("default");
+  }, [location]);
+
+// this useEffect is used just for logging if app is registering the sortCriteria-change correctly
+  useEffect(() => {
+    console.log("Sort criteria changed:", sortCriteria);
+  }, [sortCriteria]);
+
+
+ // fetching all products with useQuery:
+  const { data: products = [], isLoading } = useQuery({
+    queryKey: ["products", sortCriteria],   // now 'queryKey'-cache saves the 'sortCriteria' too, not just the fetched-products-list
+    queryFn: async () => {
+      console.log("Fetching with sort:", sortCriteria);   // test if sortCriteria is passed to fetching-function
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/items`,
+        { params: { sort: sortCriteria } }              // adding the query-parameter to url, e.g. http://localhost:5000/api/items?sort=a-z
+      );
+      return res.data.data;
+    },
+  });
+  if (isLoading) return <div className="loader"></div>;
+
+  return (
+    <>
+      <Header
+        onSelectCategory={setSelectedCategory}
+        selectedCategory={selectedCategory}
+        onSearch={setSearchWord}
+        onSort={setSortCriteria}       // passing the state-setter-function (setSortCriteria) in prop 'onSort' to the child-component Header.jsx
+        sortCriteria={sortCriteria}    // important to pass the sort-state-value also, not just the setter-function
+      />
+
+      <main>
+        {/* If there is a Searchword, then SearchItems-component renders (showing search-results), but Outlet (other pages) will not be shown.
+But if SearchWord is empty, then Outlet renders. SearchWord is passed to Outlet, so that all pages have access to this value. 
+Then any of the pages inherits what was written in the search-input, or can reset the search-input. */}    
+        {/* <SearchItems>-component is used to show RESULTS of the Search: it searches through ALL items, not just category-items.
+        This component receives state-data (searchWord) and state-setter-function (onItemSelected) from parent (RootLayout.jsx).
+        We also pass to <SearchItems> the sortCriteria-state in a prop, so we can sort just the filtered search-result-items through different criteria. */}
+        {searchWord ? (
+          <SearchItems
+            searchWord={searchWord}
+            sortCriteria={sortCriteria}
+            onItemSelected={(id) => console.log("Selected:", id)}
+          />
+        ) : (
+          <Outlet context={{ selectedCategory, searchWord, products, sortCriteria }} /> 
+          // passing all different states (including searchword and sortCriteria) via context to Outlet-components
+        )}
+        {/* using outlet-context from React Router and sending prop-value to all children pages of this wrapper.
+        Router-context is passed via Outlet-wrapper; it has nothing in common with Cart-context (= has it's own store & reducer-functions)!! */}
+      </main>)
+
+----
+
+Components wrapped in Outlet, that receive and consume the sortCriteria-state via Outlet-Router-Context:
+
+- ProductsList.jsx:
+
+ // consuming React-Router-context (selectedCategory- & sortCriteria-state), as one of the pages wrapped with Rootlayout and Outlet:
+  const { selectedCategory, sortCriteria } = useOutletContext();
+
+  return(
+   {selectedCategory ? (
+        <CategoryItems
+          categoryId={selectedCategory.id}
+          // onItemSelected={(id) => console.log("Parent has recieved id:", id)}
+          onItemSelected={handleItemSelected}
+          sortCriteria={sortCriteria}
+        />
+      ) : (
+        <p className="div-center">Please select a category above.</p>
+      )}
+  )
+
+- CategoryItems.jsx:
+
+export default function CategoryItems({
+  categoryId,
+  onItemSelected,
+  sortCriteria,
+}) {
+  // React Query handling fetch-request, caching and refetching:
+  const { data: items = [], isLoading } = useQuery({
+    queryKey: ["items", categoryId, sortCriteria],     // unique key for caching data, also 'remembers' categoryId & sortCriteria
+    queryFn: async () => {
+      // query-function, API-request for data
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/items/category/${categoryId}`,
+        {
+          params: { sort: sortCriteria },       // adding the query-parameter to url, e.g. http://localhost:5000/api/items/category/2?sort=a-z 
+        }
+      );
+      return res.data.data;
+    },
+    enabled: !!categoryId
+...})}
+
+
+- SearchItems.jsx  - renders instead of Outlet, but only if 'searchWord' is existing (otherwise other pages will be rendered)
+
+export default function SearchItems({
+  searchWord,
+  onItemSelected,
+  sortCriteria,        // gets sortCriteria as prop passed from Outlet-context
+}) {
+  ...
+
+  const { data: items = [], isLoading, isError, error } = useQuery({
+    queryKey: ["items", searchWord, sortCriteria],
+    queryFn: async () => {
+      const res = await axios.get(
+        `${process.env.REACT_APP_API_URL}/api/search/items`,
+        {
+          params: {
+            query: trimmedQuery,
+            sort: sortCriteria,        // adding the query-parameter to url, e.g. http://localhost:5000/api/search/items?query=blue&sort=a-z 
+          },
+        }
+      );
+
+      console.log("Search results:", res.data.data);
+      return res.data.data;
+    },
+    // enabled: !!searchWord, // fetch only if searchWord exists
+    enabled: !!trimmedQuery && onlyLetters.test(trimmedQuery), // start request only if input is valid!
+  });}
+
 
 ---------------------------------------------------------------------------------------
 
@@ -396,9 +783,11 @@ To do:
 
 + searchanje & search-validation
 
-- dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
++ sortiranje (by price: lower-higher i obrnuto, a-z, z-a, newest, bestseller)
 
-- sortiranje (by price: lower-higher)
+- dokumentirati kako funkcionira sortiranje (kompleksno: nova komponenta, lifting teh state up, backend-prilagođeni apiji i Search vs. Outlet)
+
+- dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
 
 - login-Modal za username & password
 

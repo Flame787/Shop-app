@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 // import { Link } from "react-router-dom";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 // instead Link, we can use NavLink - automatically applies classes to the link, based on its active and pending state
 
 import CompanyTitle from "./CompanyTitle";
@@ -16,10 +16,12 @@ export default function Header({
   selectedCategory,
   onSearch, // onSearch is the setter-function from parent-component RootLayout.jsx, related to search-function
   onSort, // onSort is the setter-function from parent-component RootLayout.jsx, related to sort-function
-  sortCriteria,  // getting the value also, not just the setter-function, from parent-component RootLayout.jsx
+  sortCriteria, // getting the value also, not just the setter-function, from parent-component RootLayout.jsx
 }) {
   // Header-komponent is just a middleman, passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper
   // -> lifting the state up to parent-component
+
+  const location = useLocation(); // fetches current route
 
   useEffect(() => {
     let lastScrollTop = 0;
@@ -46,6 +48,10 @@ export default function Header({
       window.removeEventListener("scroll", handleScroll);
     };
   }, []); // [] - effect starts only when component mounts
+
+  // defining routes where SortDropdown should render (because not needed on all pages):
+  const showSortDropDown =
+    location.pathname === "/" || location.pathname === "/products";
 
   return (
     <header id="header">
@@ -90,7 +96,11 @@ export default function Header({
       />
       {/* passing the prop-value from CategoriesBox via setter (onSelectedCategory) to RootLayout wrapper - lifting the state up to the parent */}
       {/* New: sorting component, getting setter-function and value from RootLayout via Header: */}
-      <SortDropDown onSort={onSort} selectedOption={sortCriteria} />
+
+      {/* conditionally rendering SortDropdown, depending on the current page/location */}
+      {showSortDropDown && (
+        <SortDropDown onSort={onSort} selectedOption={sortCriteria} />
+      )}
     </header>
   );
 }

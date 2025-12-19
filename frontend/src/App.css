@@ -759,6 +759,7 @@ mark {
   border: 2px solid #575757;
   border-radius: 6px;
   padding: 3px;
+  margin-bottom: 25px;
 }
 
 /* .sort-select.is-default {
