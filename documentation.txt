@@ -785,13 +785,13 @@ To do:
 
 + sortiranje (by price: lower-higher i obrnuto, a-z, z-a, newest, bestseller)
 
-- dokumentirati kako funkcionira sortiranje (kompleksno: nova komponenta, lifting teh state up, backend-prilagođeni apiji i Search vs. Outlet)
++ dokumentirati kako funkcionira sortiranje (kompleksno: nova komponenta, lifting teh state up, backend-prilagođeni apiji i Search vs. Outlet)
 
 - dodati tagove proizvodima, za efikasniju pretragu itema po funkcijama i atributima
 
 - login-Modal za username & password
 
-- login/logout-state spremljen preko Reduxa
+- login/logout-state spremljen preko Redux toolkita
 
 - Account-page za Sign up (kreiranje i izmjenu accounta)
 

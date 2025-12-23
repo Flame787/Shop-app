@@ -1,6 +1,8 @@
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { CartContextProvider } from "./context-store/CartContext";
+import { Provider } from "react-redux";
+import { store } from "./redux-store/store";
 
 import "./App.css";
 import Home from "./pages/Home";
@@ -77,11 +79,13 @@ const queryClient = new QueryClient();
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <CartContextProvider>
-        <RouterProvider router={router} />
-      </CartContextProvider>
-    </QueryClientProvider>
+    <Provider store={store}>
+      <QueryClientProvider client={queryClient}>
+        <CartContextProvider>
+          <RouterProvider router={router} />
+        </CartContextProvider>
+      </QueryClientProvider>
+    </Provider>
   );
 }
 

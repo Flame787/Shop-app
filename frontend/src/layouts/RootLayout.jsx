@@ -9,6 +9,8 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 // Toastify - for instant notifications (setting up here in RootLayout component, so nofitications can be used in any child-component)
 import SearchItems from "../components/Category/SearchItems";
+import LoginModal from "../components/LoginAccount/LoginModal";
+import { useSelector } from "react-redux";
 
 export default function RootLayout() {
   // keeping the state about which category was selected, because Rootlayout is wrapping the CategoriesBox-component:
@@ -22,6 +24,8 @@ export default function RootLayout() {
 
   // state for sorting (saving info on which sorting-criteria was selected):
   const [sortCriteria, setSortCriteria] = useState("default");
+
+  const openLoginModal = useSelector((state) => state.auth.openLoginModal);
 
   useEffect(() => {
     // every time a route changes, we reset searchWord-state to "", so Outlet-pages can be rendered, instead of search-results
@@ -77,7 +81,7 @@ Then any of the pages inherits what was written in the search-input, or can rese
           />
         ) : (
           <Outlet
-            context={{ selectedCategory, searchWord, products, sortCriteria }}  // passing all different states via context to Outlet-components
+            context={{ selectedCategory, searchWord, products, sortCriteria }} // passing all different states via context to Outlet-components
           />
         )}
         {/* using outlet-context from React Router and sending prop-value to all children pages of this wrapper */}
@@ -96,6 +100,7 @@ Then any of the pages inherits what was written in the search-input, or can rese
         draggable
         theme="light"
       />
+      {openLoginModal && <LoginModal />}
     </>
   );
 }
