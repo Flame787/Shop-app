@@ -70,7 +70,7 @@ const [selectedCategory, setSelectedCategory] = useState(null);
 
 2. Header:
 
-- setter-function 'setSelectedCategory' is recieved via prop 'onSelectCategory' and passed further to CategoriesBox.jsx (= child-component of Header):
+- setter-function 'setSelectedCategory' is received via prop 'onSelectCategory' and passed further to CategoriesBox.jsx (= child-component of Header):
 
 export default function Header({ onSelectCategory }) {
   <CategoriesBox onSelectCategory={onSelectCategory} />
@@ -769,6 +769,28 @@ export default function SearchItems({
 
 ---------------------------------------------------------------------------------------
 
+Authentification (Log in, Sign up):
+
+- added components:
+
+authSlice.js, store.js - inside of the folder: redux-store
+
+- modified components: 
+
+Account.jsx   (page)
+AccountSection.jsx   (LoginAccount)
+Loginmodal.jsx
+LogInOutButton.jsx
+AccountButton.jsx
+Modal.jsx   (reusable)
+RootLayout.jsx   (layouts)
+App.js
+
+
+
+--------------------------------------------------------------------------------------
+
+
 To do:
 
 + u Toast notifikacije u ItemCard dodati u zagradu (item.quantity), nakon item.name.
@@ -800,3 +822,34 @@ To do:
 - spremanje podataka o orderu produkata (Cart) u bazu (da se ne gube kod refresha stranice)
 
 - povezivanje ordera, accounta i proizvoda u bazi
+
+
+----------------------------------------------------------
+
+Install on backend: 
+
+npm install bcrypt jsonwebtoken
+
+npm install cookie-parser
+
+---------------------------
+
+MySQL table 'customers': 
+
+- previously had columns: customer_id, name, email. phone, street, city, postal_code, country, date_registered
+- must add columns: password_hash, role (user/admin)
+
+ALTER TABLE customers
+ADD COLUMN password_hash VARCHAR(255) NOT NULL;
+
+ALTER TABLE customers
+ADD COLUMN role ENUM('user', 'admin') NOT NULL DEFAULT 'user';
+
+-----------------------------------------------------------------
+
+added API routes for login and authentication on backend, + middleware
+
+-------------------------------------------------------------------
+
+Frontend - authentication:
+
