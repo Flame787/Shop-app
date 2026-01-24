@@ -1,15 +1,27 @@
 // Express.js-server
 // defining APIs and methods
 
+require("dotenv").config();
+
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
 
 const { sql, poolPromise } = require("./db.js");
 
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
+
 const app = express();
 app.use(bodyParser.json());
 app.use(cors());
+app.use(cookieParser());
+
+// const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
+// fallback "super-secret-key", later added real secret-key in .env
+
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const PORT = process.env.PORT || 5000;
 // we can define another real PORT for production (https... where we host backend), but for development - it will use http://localhost:5000/
@@ -129,63 +141,15 @@ app.get("/api/items/:id", async (req, res) => {
  
 */
 
-// 3rd API: POST - add a new item into the database:
+// 3rd API: POST - add a new item into the database - ADMIN:
 
-app.post("/api/items", async (req, res) => {
-  try {
-    const {
-      name,
-      description,
-      price,
-      discount_price,
-      quantity_in_stock,
-      picture_url,
-      category_id,
-      tags,
-      is_active,
-    } = req.body;
-
-    // validation of input data, before creating new item:
-
-    // required fields are name and price, other data is not mandatory (for now -> will be changed later):
-    if (!name || !price) {
-      return res.status(400).json({
-        success: false,
-        message: "Name and price are required.",
-      });
-    }
-
-    const pool = await poolPromise;
-
-    const [result] = await pool.query(
-      `INSERT INTO items (name,
-      description,
-      price,
-      discount_price,
-      quantity_in_stock,
-      picture_url,
-      category_id,
-      tags,
-      is_active) VALUES(?,?,?,?,?,?,?,?,?)`,
-      [
-        name,
-        description || null, // for each field that is not required, we allow that it can be null (add: || null)
-        price,
-        discount_price || null,
-        quantity_in_stock ?? 0,
-        picture_url || null,
-        category_id || null,
-        tags || null,
-        is_active || null,
-      ]
-    );
-
-    res.status(201).json({
-      success: true,
-      message: "Item created successfully.",
-      data: {
-        item_id: result.insertId,
-        // result - object with metadata about executed request, insertId - ID that the base creates for every new row with AUTO_INCREMENT
+app.post(
+  "/api/items",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const {
         name,
         description,
         price,
@@ -195,26 +159,22 @@ app.post("/api/items", async (req, res) => {
         category_id,
         tags,
         is_active,
-      },
-    });
-  } catch (error) {
-    console.error("Error adding new item:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
-  }
-});
+      } = req.body;
 
-// 4th API: PUT - update an existing item
+      // validation of input data, before creating new item:
 
-app.put("/api/items/:id", async (req, res) => {
-  try {
-    const { id } = req.params; // ID of an item, which data we want to update
+      // required fields are name and price, other data is not mandatory (for now -> will be changed later):
+      if (!name || !price) {
+        return res.status(400).json({
+          success: false,
+          message: "Name and price are required.",
+        });
+      }
 
-    const {
-      name,
+      const pool = await poolPromise;
+
+      const [result] = await pool.query(
+        `INSERT INTO items (name,
       description,
       price,
       discount_price,
@@ -222,101 +182,168 @@ app.put("/api/items/:id", async (req, res) => {
       picture_url,
       category_id,
       tags,
-      is_active,
-    } = req.body; // sending updated data (about one item with specific ID) in req.body
+      is_active) VALUES(?,?,?,?,?,?,?,?,?)`,
+        [
+          name,
+          description || null, // for each field that is not required, we allow that it can be null (add: || null)
+          price,
+          discount_price || null,
+          quantity_in_stock ?? 0,
+          picture_url || null,
+          category_id || null,
+          tags || null,
+          is_active || null,
+        ],
+      );
 
-    // validation of input data (if some of requested data is missing):
-    if (!name || !price) {
-      return res.status(400).json({
+      res.status(201).json({
+        success: true,
+        message: "Item created successfully.",
+        data: {
+          item_id: result.insertId,
+          // result - object with metadata about executed request, insertId - ID that the base creates for every new row with AUTO_INCREMENT
+          name,
+          description,
+          price,
+          discount_price,
+          quantity_in_stock,
+          picture_url,
+          category_id,
+          tags,
+          is_active,
+        },
+      });
+    } catch (error) {
+      console.error("Error adding new item:", error);
+      res.status(500).json({
         success: false,
-        message: "Item name and price are required.",
+        message: "Server error",
+        error: error.message,
       });
     }
+  },
+);
 
-    const pool = await poolPromise;
+// 4th API: PUT - update an existing item - ADMIN:
 
-    const [result] = await pool.query(
-      "UPDATE items SET name = ?, description = ?, price = ?, discount_price = ?, quantity_in_stock = ?, picture_url = ?, category_id = ?, tags = ?, is_active = ? WHERE item_id = ?",
-      [
+app.put(
+  "/api/items/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params; // ID of an item, which data we want to update
+
+      const {
         name,
-        description || null,
+        description,
         price,
-        discount_price || null,
-        quantity_in_stock ?? 0,
-        picture_url || null,
-        category_id || null,
-        tags || null,
-        is_active || null,
+        discount_price,
+        quantity_in_stock,
+        picture_url,
+        category_id,
+        tags,
+        is_active,
+      } = req.body; // sending updated data (about one item with specific ID) in req.body
+
+      // validation of input data (if some of requested data is missing):
+      if (!name || !price) {
+        return res.status(400).json({
+          success: false,
+          message: "Item name and price are required.",
+        });
+      }
+
+      const pool = await poolPromise;
+
+      const [result] = await pool.query(
+        "UPDATE items SET name = ?, description = ?, price = ?, discount_price = ?, quantity_in_stock = ?, picture_url = ?, category_id = ?, tags = ?, is_active = ? WHERE item_id = ?",
+        [
+          name,
+          description || null,
+          price,
+          discount_price || null,
+          quantity_in_stock ?? 0,
+          picture_url || null,
+          category_id || null,
+          tags || null,
+          is_active || null,
+          id,
+        ],
+      );
+
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Item not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: "Item updated successfully.",
+        updatedId: id,
+        affectedRows: result.affectedRows,
+        changedRows: result.changedRows,
+      });
+    } catch (error) {
+      console.error("Error updating item:", error);
+      res.status(500).json({
+        success: false,
+        message: "Server error",
+        error: error.message,
+      });
+    }
+  },
+);
+
+// 5th API: DELETE - remove an item by ID - ADMIN:
+
+app.delete(
+  "/api/items/:id",
+  authenticateToken,
+  requireRole("admin"),
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      //  const id = parseInt(req.params.id, 10);    // would be additional validation, if incoming ID is string - should be parse to number
+
+      // validation:
+      if (isNaN(id)) {
+        return res.status(400).json({
+          success: false,
+          message: "Invalid ID",
+        });
+      }
+
+      const pool = await poolPromise;
+
+      const [result] = await pool.query("DELETE FROM items WHERE item_id = ?", [
         id,
-      ]
-    );
+      ]);
 
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
+      if (result.affectedRows === 0) {
+        return res.status(404).json({
+          success: false,
+          message: "Item not found",
+        });
+      }
+
+      res.status(200).json({
+        success: true,
+        message: `Item with id ${id} deleted from the base.`,
+        deletedId: id,
+      });
+    } catch (error) {
+      console.log("Error deleting item:", error);
+      res.status(500).json({
         success: false,
-        message: "Item not found",
+        message: "Server error",
+        error: error.message,
       });
     }
-
-    res.status(200).json({
-      success: true,
-      message: "Item updated successfully.",
-      updatedId: id,
-      affectedRows: result.affectedRows,
-      changedRows: result.changedRows,
-    });
-  } catch (error) {
-    console.error("Error updating item:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
-  }
-});
-
-// 5th API: DELETE - remove an item by ID
-
-app.delete("/api/items/:id", async (req, res) => {
-  try {
-    const { id } = req.params;
-    //  const id = parseInt(req.params.id, 10);    // would be additional validation, if incoming ID is string - should be parse to number
-
-    // validation:
-    if (isNaN(id)) {
-      return res.status(400).json({
-        success: false,
-        message: "Invalid ID",
-      });
-    }
-
-    const pool = await poolPromise;
-
-    const [result] = await pool.query("DELETE FROM items WHERE item_id = ?", [
-      id,
-    ]);
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "Item not found",
-      });
-    }
-
-    res.status(200).json({
-      success: true,
-      message: `Item with id ${id} deleted from the base.`,
-      deletedId: id,
-    });
-  } catch (error) {
-    console.log("Error deleting item:", error);
-    res.status(500).json({
-      success: false,
-      message: "Server error",
-      error: error.message,
-    });
-  }
-});
+  },
+);
 
 // 6th API: GET - get items by category ID
 app.get("/api/items/category/:categoryId", async (req, res) => {
@@ -390,7 +417,7 @@ app.get("/api/categories", async (req, res) => {
   try {
     const pool = await poolPromise;
     const [rows] = await pool.query(
-      "SELECT category_id, category_name FROM categories"
+      "SELECT category_id, category_name FROM categories",
     );
 
     res.status(200).json({
@@ -494,7 +521,7 @@ app.get("/api/search/items", async (req, res) => {
       //   "\\b" + searchWord.toLowerCase() + "\\b",
       // ]
 
-      [`\\b${searchWord}\\b`, `\\b${searchWord}\\b`, `\\b${searchWord}\\b`]
+      [`\\b${searchWord}\\b`, `\\b${searchWord}\\b`, `\\b${searchWord}\\b`],
     );
     // REGEXP-query - finds only whole words that match searchWord in name, description or tag
 
@@ -514,3 +541,231 @@ app.get("/api/search/items", async (req, res) => {
 });
 
 /* test: http://localhost:5000/api/items/search?query=chair */
+
+// 9th API: LOGIN ROUTE - checks email & password that a user sends during login, and returns JWT-token + basic info (id, email, password-hash):
+
+app.post("/api/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // check that both fields (email, password) were sent:
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Email and password are required",
+      });
+    }
+
+    // fetch user from database:
+    const pool = await poolPromise;
+    const [rows] = await pool.query(
+      "SELECT customer_id, email, password_hash, role FROM customers WHERE email = ?",
+      [email],
+    );
+
+    if (rows.length === 0) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    const user = rows[0];
+
+    // Check password:
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+
+    // generate JWT-token:
+    const accessToken = jwt.sign(
+      {
+        sub: user.customer_id,
+        role: user.role,
+      },
+      JWT_SECRET,
+      { expiresIn: "15m" }, // access-token lasts for 15 min
+    );
+
+    // generate refresh-token:
+    const refreshToken = jwt.sign(
+      { sub: user.customer_id, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }, // refresh-token lasts  for 7 days
+    );
+
+    // save refresh-token to httpOnly-cookie (not visible on browser, safe against XSS-attacks):
+    res.cookie("refreshToken", refreshToken, {
+      httpOnly: true, // *secure: true - works only via HTTPS-connection
+      secure: process.env.NODE_ENV === "production", // *on localhost we don't have HTTPS, so we don't set "secure: true"
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+    });
+
+    // return token + basic info about user (customer_id, email, role):
+    res.status(200).json({
+      success: true,
+      accessToken,
+      user: {
+        id: user.customer_id,
+        email: user.email,
+        role: user.role,
+      },
+    });
+  } catch (error) {
+    console.error("Login error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// Middleware for checking JWT-token:
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"]; // "Bearer <token>"
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: "Token missing" });
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload; // dodajemo payload u req.user
+    next();
+  } catch (err) {
+    return res.status(403).json({ success: false, message: "Invalid token" });
+  }
+};
+
+// // 10th API: GET - return info about currently logged-in user, requires JWT-token (received via 9th API), sends token in header:
+app.get("/api/me", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.sub;
+
+    const pool = await poolPromise;
+    const [rows] = await pool.query(
+      "SELECT customer_id, name, email, role, date_registered FROM customers WHERE customer_id = ?",
+      [userId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    const user = rows[0];
+
+    res.status(200).json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    console.error("Error in /api/me:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// 11th API: POST - REGISTER NEW USER + hashing password:
+app.post("/api/register", async (req, res) => {
+  try {
+    const { name, email, password, role } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, email and password are required",
+      });
+    }
+
+    const pool = await poolPromise;
+
+    // check if there is email:
+    const [existing] = await pool.query(
+      "SELECT customer_id FROM customers WHERE email = ?",
+      [email],
+    );
+    if (existing.length > 0) {
+      return res
+        .status(409)
+        .json({ success: false, message: "Email already exists" });
+    }
+
+    // hashing password:
+    const password_hash = await bcrypt.hash(password, 10);
+
+    const [result] = await pool.query(
+      "INSERT INTO customers (name, email, password_hash, role, date_registered) VALUES (?, ?, ?, ?, NOW())",
+      [name, email, password_hash, role || "user"],
+    );
+
+    res.status(201).json({
+      success: true,
+      message: "User registered",
+      userId: result.insertId,
+    });
+  } catch (error) {
+    console.error("Registration error:", error);
+    res.status(500).json({ success: false, message: "Server error" });
+  }
+});
+
+// 12th API: POST - return new ACCESS-TOKEN, if REFRESH-TOKEN is valid:
+app.post("/api/refresh", async (req, res) => {
+  try {
+    const { refreshToken } = req.cookies;
+    if (!refreshToken) {
+      return res
+        .status(401)
+        .json({ success: false, message: "No refresh token" });
+    }
+
+    // check refresh-token:
+    const payload = jwt.verify(refreshToken, JWT_SECRET);
+
+    // create new access-token:
+    const accessToken = jwt.sign(
+      { sub: payload.sub, role: payload.role },
+      JWT_SECRET,
+      { expiresIn: "15m" },
+    );
+
+    res.status(200).json({ success: true, accessToken });
+  } catch (error) {
+    console.error("Refresh token error:", error);
+    res.status(403).json({ success: false, message: "Invalid refresh token" });
+  }
+});
+
+// Middleware: check if custoemr has some specific role:
+const requireRole = (role) => (req, res, next) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Not authenticated" });
+  }
+  if (req.user.role !== role) {
+    return res.status(403).json({ success: false, message: "Forbidden" });
+  }
+  next();
+};
+
+/*** later add ADMIN - GET route for Admin-UI-pages:
+
+app.get("/api/admin/dashboard", authenticateToken, requireRole("admin"), (req, res) => {
+
+});
+ 
+*/

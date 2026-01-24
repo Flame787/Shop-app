@@ -19,7 +19,7 @@ const authSlice = createSlice({
       state.role = action.payload.role;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      state.openLoginModal = false; // close Modal after login was successful
+      state.openLoginModal = false;     // close Modal after login was successful
     },
     logout: (state, action) => {
       state.isLoggedIn = false;
