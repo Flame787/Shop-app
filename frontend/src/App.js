@@ -74,7 +74,7 @@ const router = createBrowserRouter([
   },
 ]);
 
-// adding React Query - wrapping the Provider arround router (containing all pages):
+// adding React Query (client) & Redux-Toolkit Provider (store) - wrapping the Providers arround router (containing all pages):
 const queryClient = new QueryClient();
 
 function App() {

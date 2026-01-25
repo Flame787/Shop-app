@@ -6,6 +6,8 @@ import axios from "axios";
 export default function LoginModal() {
   const dispatch = useDispatch();
 
+  // what happens when the Login-form is submitted - we try to post entered email & password to backend:
+
   async function handleSubmit(e) {
     e.preventDefault();
 
@@ -29,7 +31,7 @@ export default function LoginModal() {
           password: password,
         },
         {
-          withCredentials: true, // važno za slanje httpOnly refresh cookie-a
+          withCredentials: true, // important for sending httpOnly refresh cookie
         },
       );
 
