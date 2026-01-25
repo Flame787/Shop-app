@@ -2,6 +2,7 @@
 
 import { createSlice } from "@reduxjs/toolkit";
 
+// defining initial state, which will be added to 'createSlice' function
 const initialState = {
   isLoggedIn: false,
   role: null,
@@ -10,7 +11,8 @@ const initialState = {
   openLoginModal: false,
 };
 
-const authSlice = createSlice({
+// createSlice contains reducer-functions (reducers) which use Immer library to enable changing state in immutable way (no spread-operator needed)
+const authSlice = createSlice({  
   name: "auth",
   initialState,
   reducers: {
@@ -19,7 +21,7 @@ const authSlice = createSlice({
       state.role = action.payload.role;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      state.openLoginModal = false;     // close Modal after login was successful
+      state.openLoginModal = false;       // close Modal after login was successful
     },
     logout: (state, action) => {
       state.isLoggedIn = false;
