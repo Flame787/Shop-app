@@ -15,18 +15,54 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+// app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+
 app.use(cookieParser());
 
 // const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
 // fallback "super-secret-key", later added real secret-key in .env
 
 const JWT_SECRET = process.env.JWT_SECRET;
+// test JWT:
+console.log("JWT_SECRET loaded:", JWT_SECRET ? "Yes" : "No");
 
 const PORT = process.env.PORT || 5000;
 // we can define another real PORT for production (https... where we host backend), but for development - it will use http://localhost:5000/
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+
+// Middleware for checking JWT-token:
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers["authorization"]; // "Bearer <token>"
+  const token = authHeader && authHeader.split(" ")[1];
+
+  if (!token) {
+    return res.status(401).json({ success: false, message: "Token missing" });
+  }
+
+  try {
+    const payload = jwt.verify(token, JWT_SECRET);
+    req.user = payload; // dodajemo payload u req.user
+    next();
+  } catch (err) {
+    return res.status(403).json({ success: false, message: "Invalid token" });
+  }
+};
+
+// Middleware: check if custoemr has some specific role:
+const requireRole = (role) => (req, res, next) => {
+  if (!req.user) {
+    return res
+      .status(401)
+      .json({ success: false, message: "Not authenticated" });
+  }
+  if (req.user.role !== role) {
+    return res.status(403).json({ success: false, message: "Forbidden" });
+  }
+  next();
+};
 
 // -------------------- Creating APIs ----------------------------//
 
@@ -626,25 +662,6 @@ app.post("/api/login", async (req, res) => {
   }
 });
 
-// Middleware for checking JWT-token:
-
-const authenticateToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"]; // "Bearer <token>"
-  const token = authHeader && authHeader.split(" ")[1];
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: "Token missing" });
-  }
-
-  try {
-    const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload; // dodajemo payload u req.user
-    next();
-  } catch (err) {
-    return res.status(403).json({ success: false, message: "Invalid token" });
-  }
-};
-
 // // 10th API: GET - return info about currently logged-in user, requires JWT-token (received via 9th API), sends token in header:
 app.get("/api/me", authenticateToken, async (req, res) => {
   try {
@@ -748,19 +765,6 @@ app.post("/api/refresh", async (req, res) => {
     res.status(403).json({ success: false, message: "Invalid refresh token" });
   }
 });
-
-// Middleware: check if custoemr has some specific role:
-const requireRole = (role) => (req, res, next) => {
-  if (!req.user) {
-    return res
-      .status(401)
-      .json({ success: false, message: "Not authenticated" });
-  }
-  if (req.user.role !== role) {
-    return res.status(403).json({ success: false, message: "Forbidden" });
-  }
-  next();
-};
 
 /*** later add ADMIN - GET route for Admin-UI-pages:
 
