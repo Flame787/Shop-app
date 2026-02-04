@@ -15,13 +15,17 @@ const cookieParser = require("cookie-parser");
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+// app.use(cors());
+app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+
 app.use(cookieParser());
 
 // const JWT_SECRET = process.env.JWT_SECRET || "super-secret-key";
 // fallback "super-secret-key", later added real secret-key in .env
 
 const JWT_SECRET = process.env.JWT_SECRET;
+// test JWT:
+console.log("JWT_SECRET loaded:", JWT_SECRET ? "Yes" : "No");
 
 const PORT = process.env.PORT || 5000;
 // we can define another real PORT for production (https... where we host backend), but for development - it will use http://localhost:5000/

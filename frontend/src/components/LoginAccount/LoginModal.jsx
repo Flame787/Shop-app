@@ -64,7 +64,7 @@ export default function LoginModal() {
         </div>
         <div>
           <label htmlFor="password">Password</label>
-          <input type="text" id="password" name="password" />
+          <input type="password" id="password" name="password" />
           {/* If the name attribute is omitted, the value of the input field will not be sent at all. */}
         </div>
         <button>Log in</button>
