@@ -849,7 +849,38 @@ ADD COLUMN role ENUM('user', 'admin') NOT NULL DEFAULT 'user';
 
 added API routes for login and authentication on backend, + middleware
 
+- moved middleware definitions (authenticateToken & requireRole) before all API definitions (otherwise cannot be referenced in APIs later)
+
+- added CLIENT_URL & JWT_SECRET (generated online, then additionaly changed by myself) to .env file
+
+- adjusted CORS to accept requests from CLIENT_URL (can be renamed with productions page later in .env)
+
 -------------------------------------------------------------------
 
 Frontend - authentication:
 
+via LoginModal -> contains a small form for username (email) and password entry
+
+- testing Login form before any user was registered ('customers' base still empty) -> 'Invalid credentials' message (because no user was registered)
+
+- adding the 1st user through POSTMAN (because Registration on Frontend is not yet implemented): 
+
+created new POST request to http://localhost:5000/api/register
+
+- add to Headers: Content-Type: application/json (+all other points in Headers can stay selected, as default)
+- add to Body: JSON - raw: 
+{
+  "name": "Jim",
+  "email": "jimmy@test.com",
+  "password": "123456",
+  "role": "user"
+}
+
+-> SEND -> 201 Created: 
+{
+    "success": true,
+    "message": "User registered",
+    "userId": 1
+}
+
+- new user is visible in the base, with his ID, email and hashed password (real password not visible)
