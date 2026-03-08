@@ -32,33 +32,37 @@ const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
 
-// Middleware for checking JWT-token:
-
+// Middleware for checking JWT-token (takes place before request reaches the route, checks if token is valid, and if yes - adds payload into req.user, if not - returns error):
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"]; // "Bearer <token>"
   const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) {
-    return res.status(401).json({ success: false, message: "Token missing" });
+    return res.status(401).json({ success: false, message: "Token missing" }); // 401 Unauthorized - user is not authenticated
   }
 
+  // Token verification: checks if token is correctly signed with JWT_SECRET, not expired and not modified.
+  // If token is valid - returns payload (data that we put in token when it's created - in our case, customer_id and role):
   try {
     const payload = jwt.verify(token, JWT_SECRET);
-    req.user = payload; // dodajemo payload u req.user
-    next();
+    req.user = payload; // add payload (customer_id and role) into req.user. Request-object will contain user info, like req.user.id and req.user.role
+    next(); // if token is valid, move to the next step - next middleware or route handler (otherwise, if token invalid, throw error)
   } catch (err) {
     return res.status(403).json({ success: false, message: "Invalid token" });
+    // 403 Forbidden - user is authenticated but doesn't have access
   }
 };
 
-// Middleware: check if custoemr has some specific role:
+// Middleware: check if customer has some specific role:
 const requireRole = (role) => (req, res, next) => {
+  // higher order function (function that returns a function)
   if (!req.user) {
     return res
       .status(401)
       .json({ success: false, message: "Not authenticated" });
   }
   if (req.user.role !== role) {
+    // if user has role 'user', but the route requires role 'admin' - the route is forbidden for this user.
     return res.status(403).json({ success: false, message: "Forbidden" });
   }
   next();
@@ -177,7 +181,7 @@ app.get("/api/items/:id", async (req, res) => {
  
 */
 
-// 3rd API: POST - add a new item into the database - ADMIN:
+// 3rd API: POST - add a new item into the database - only ADMIN-role can add new items, so we use both middlewares - authenticateToken and requireRole('admin'):
 
 app.post(
   "/api/items",
@@ -260,7 +264,7 @@ app.post(
   },
 );
 
-// 4th API: PUT - update an existing item - ADMIN:
+// 4th API: PUT - update an existing item - only ADMIN-role can update items, so we use both middlewares - authenticateToken and requireRole('admin'):
 
 app.put(
   "/api/items/:id",
@@ -333,7 +337,7 @@ app.put(
   },
 );
 
-// 5th API: DELETE - remove an item by ID - ADMIN:
+// 5th API: DELETE - remove an item by ID - only ADMIN-role can delete items, so we use both middlewares - authenticateToken and requireRole('admin'):
 
 app.delete(
   "/api/items/:id",
@@ -583,10 +587,12 @@ app.get("/api/search/items", async (req, res) => {
 app.post("/api/login", async (req, res) => {
   try {
     const { email, password } = req.body;
+    // this route "/api/login" expects to receive email and password in req.body, when user tries to log in (from frontend login-form)
 
     // check that both fields (email, password) were sent:
     if (!email || !password) {
       return res.status(400).json({
+        // Status 400 Bad Request - because request sent from frontend doesn't contain all required data (email and/or password)
         success: false,
         message: "Email and password are required",
       });
@@ -596,20 +602,23 @@ app.post("/api/login", async (req, res) => {
     const pool = await poolPromise;
     const [rows] = await pool.query(
       "SELECT customer_id, email, password_hash, role FROM customers WHERE email = ?",
-      [email],
+      [email], // searching for user with this 'email' in the base, and if found - return customer_id, email, password_hash and role of this user
+      // '?' - parameterized query - prevents SQL-injection, because user input (email) is not directly added into SQL-query,
+      // but is sent separately as parameter, and the database driver takes care of escaping special characters in email, so that they don't break the query
     );
 
     if (rows.length === 0) {
       return res.status(401).json({
         success: false,
         message: "Invalid credentials",
-      });
-    }
+      }); // if no user with this email was found in the base, return 401 Unauthorized - because user is not authenticated (doesn't exist) - even if password is correct, but email is wrong - we don't want to say "email not found", because it can give clues to attackers about which emails are registered in the system
+    } // message is generic, because we don't want to give hints to attackers about which part of credentials is wrong - email or password
 
-    const user = rows[0];
+    const user = rows[0]; // if user with this email was found, it will be in the 1st row of result (rows[0]), and we save it in variable 'user' for further checks
 
     // Check password:
-    const isPasswordValid = await bcrypt.compare(password, user.password_hash);
+    const isPasswordValid = await bcrypt.compare(password, user.password_hash);   
+    // bcrypt.compare - compares plain password (that user sent during login) with hashed password from the base (user.password_hash), and returns 'true' if they match, and 'false' if they don't match
 
     if (!isPasswordValid) {
       return res.status(401).json({
@@ -628,25 +637,30 @@ app.post("/api/login", async (req, res) => {
       { expiresIn: "15m" }, // access-token lasts for 15 min
     );
 
-    // generate refresh-token:
+    // generate refresh-token - refresh-token is used to get new access-tokens, when old access-token expires, without asking user to log in again (send email and password again)
     const refreshToken = jwt.sign(
-      { sub: user.customer_id, role: user.role },
+      { sub: user.customer_id, role: user.role },   // sub = subject (customer_id), standard JWT-claim for user ID (owner of the token).
       JWT_SECRET,
-      { expiresIn: "7d" }, // refresh-token lasts  for 7 days
-    );
+      { expiresIn: "7d" }, // refresh-token lasts  for 7 days, it has the same payload and secret as access-token, but longer expiration time.
+    );  // refresh-token should be stored in httpOnly-cookie, because it's more secure than localStorage (not accessible via JavaScript, so safe against XSS-attacks), and it will be sent automatically with every request to the backend, so we can check it in the backend and issue new access-tokens when needed
 
     // save refresh-token to httpOnly-cookie (not visible on browser, safe against XSS-attacks):
     res.cookie("refreshToken", refreshToken, {
-      httpOnly: true, // *secure: true - works only via HTTPS-connection
-      secure: process.env.NODE_ENV === "production", // *on localhost we don't have HTTPS, so we don't set "secure: true"
-      sameSite: "strict",
+      httpOnly: true, // JS in browser cannot read the cookie, cookie is not available to JS in the browser; browser automatically sends this cookie in every request to the backend, so we can check it in the backend and issue new access-tokens when needed.
+      // true - works only via HTTPS-connection
+      secure: process.env.NODE_ENV === "production", // cookie will be secure: true only in production, but secure: false in development (localhost) where we don't have HTTPS.
+      // once we are in production, cookie will be sent only via HTTPS, so then the condition on the right side will be true -> secure: true, 
+      // but in development on localhost we don't have HTTPS, so we will have secure: false, to allow cookies to work also on localhost
+
+      sameSite: "strict",  // cookie will be sent only in requests from the same site (our frontend), and not sent in cross-site requests (e.g. if attacker tries to send request from another site, cookie won't be sent, so attacker won't be able to use refresh-token to get new access-tokens)
       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
     });
 
     // return token + basic info about user (customer_id, email, role):
-    res.status(200).json({
+    res.status(200).json({             // returns 200 OK, if user is authenticated and login was successful
       success: true,
-      accessToken,
+      accessToken,            
+      // in JSON-response we return accessToken, but not refreshToken (because it's in httpOnly-cookie), and also basic info about user (id, email, role) - we can use this info in the frontend to show/hide some UI-elements depending on user role, and to know which user is logged in
       user: {
         id: user.customer_id,
         email: user.email,
@@ -655,7 +669,7 @@ app.post("/api/login", async (req, res) => {
     });
   } catch (error) {
     console.error("Login error:", error);
-    res.status(500).json({
+    res.status(500).json({                  // 500 Internal Server Error - if something went wrong on the server during login process (e.g. database connection error), and we couldn't process the login request
       success: false,
       message: "Server error",
     });
