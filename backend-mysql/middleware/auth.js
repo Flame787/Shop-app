@@ -1,7 +1,10 @@
+// Middleware for authentification with JWT (JSON Web Token):
+
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_SECRET;
 
-// Middleware for checking JWT-token (takes place before request reaches the route, checks if token is valid, and if yes - adds payload into req.user, if not - returns error):
+// Middleware for checking JWT-token (happens before request reaches the route - first it checks if token is valid, 
+// and if yes - adds payload into req.user, if not - returns error):
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"]; // "Bearer <token>"
   const token = authHeader && authHeader.split(" ")[1];

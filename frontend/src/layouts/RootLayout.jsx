@@ -64,7 +64,7 @@ export default function RootLayout() {
       />
       {/* for search-state: getting the state-value from the child-component ProductsList, via Header-component - middleman (state lifted up) */}
 
-      <main style={{ minHeight: "80vh" }}>
+      <main >
         {/* pushes footer down, even if it's not much content on the page */}
 
         {/* If there is a Searchword, then SearchItems-component renders (showing search-results), but Outlet (other pages) will not be shown.
