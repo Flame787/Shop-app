@@ -18,6 +18,10 @@
   font-family: "League Spartan", sans-serif;
 }
 
+main {
+  min-height: "80vh";
+}
+
 .main-title {
   font-family: "League Spartan", sans-serif;
   font-size: 1.2rem;
@@ -200,6 +204,58 @@
 
 .products-category {
   margin: 20px;
+}
+
+/* HomePage */
+
+.img-array {
+  display: flex;
+  flex-direction: row;
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.img-promotion {
+  width: 100%;
+  height: auto;
+  margin-top: 40px;
+}
+
+.img-animation {
+  height: 300px;
+  width: auto;
+  margin: auto 20px;
+}
+
+.img-slider {
+  overflow: hidden;
+  width: 100%;
+  margin: 60px 0 60px;
+  /* 60px does not apply, it goes over footer */
+}
+
+.img-track {
+  display: flex;
+  background-color: #0d0d0d;
+  padding: 20px 0;
+  width: calc(300px * 14); /* 14 pictures in one track */
+  animation: scroll-left 60s linear infinite;
+  /* 60s duration time = slow, 20s = fast (the smaller the number, the faster the animation runs and finishes */
+}
+
+.img-animation {
+  height: 300px;
+  width: auto;
+  margin: 0 20px;
+}
+
+@keyframes scroll-left {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(calc(-300px * 7)); /* movement for 7 pictures width */
+  }
 }
 
 /* ItemCard styling: .item-card when displayed with other items in category, .product-card when displayed as solo-product */
@@ -709,7 +765,9 @@ img.cart-image.product-image {
   text-decoration: none;
   margin: 0 10px;
   font-size: 1.2rem;
-  transition: color 0.3s ease, transform 0.3s ease;
+  transition:
+    color 0.3s ease,
+    transform 0.3s ease;
 }
 
 .social-links a:hover {

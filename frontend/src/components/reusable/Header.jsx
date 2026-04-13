@@ -50,8 +50,10 @@ export default function Header({
   }, []); // [] - effect starts only when component mounts
 
   // defining routes where SortDropdown should render (because not needed on all pages):
-  const showSortDropDown =
-    location.pathname === "/" || location.pathname === "/products";
+  // const showSortDropDown =
+  //   location.pathname === "/" || location.pathname === "/products";
+
+  const showSortDropDown = location.pathname === "/products";
 
   return (
     <header id="header">
