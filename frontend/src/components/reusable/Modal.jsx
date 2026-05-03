@@ -29,10 +29,10 @@ export default function Modal({ children, open, onClose, className = "" }) {
 
   return createPortal(
     <dialog ref={dialog} className={`modal ${className}`}>
-      <button className="modal-close-btn" onClick={onClose}>
+      <div className="button-close-div"><button className="modal-close-btn" onClick={onClose}>
         ✕
-      </button>
-      {children}
+      </button></div>
+      <div>{children}</div>
     </dialog>,
     document.getElementById("modal")
   );

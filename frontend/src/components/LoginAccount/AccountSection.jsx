@@ -4,7 +4,7 @@ export default function AccountSection() {
   const user = useSelector((state) => state.auth.user);
 
   return (
-    <>
+    <div className="account-section">
       <form action="" method="post">
         <h3>Your account</h3>
         <div>
@@ -60,6 +60,6 @@ export default function AccountSection() {
         <button>Log in</button>
       </form>
       <button>Home</button>
-    </>
+    </div>
   );
 }
