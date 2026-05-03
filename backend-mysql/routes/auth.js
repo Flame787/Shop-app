@@ -91,9 +91,10 @@ router.get("/me", authenticateToken, async (req, res) => {
 
     const pool = await poolPromise;
     const [rows] = await pool.query(
-      "SELECT customer_id, name, email, role, date_registered FROM customers WHERE customer_id = ?",
+      "SELECT customer_id, name, email, role, date_registered, phone, street, city, postal_code, country FROM customers WHERE customer_id = ?",
       [userId],
     );
+    // added all fields to the SELECT query, to show all user data on the Account page (when user is logged in)
 
     if (rows.length === 0) {
       return res.status(404).json({
@@ -117,7 +118,53 @@ router.get("/me", authenticateToken, async (req, res) => {
   }
 });
 
-// 11th API: POST - REGISTER NEW USER + hashing password:
+// 11th API: PUT - update currently logged-in user's profile information
+router.put("/me", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    const {
+      name,
+      email,
+      phone,
+      street,
+      city,
+      postal_code,
+      country,
+    } = req.body;
+
+    const pool = await poolPromise;
+    await pool.query(
+      "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ? WHERE customer_id = ?",
+      [name, email, phone, street, city, postal_code, country, userId],
+    );
+    // we update all fields that user can edit on the Account page (name, email, phone, street, city, postal_code, country)
+
+    const [rows] = await pool.query(
+      "SELECT customer_id, name, email, role, date_registered, phone, street, city, postal_code, country FROM customers WHERE customer_id = ?",
+      [userId],
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: rows[0],
+    });
+  } catch (error) {
+    console.error("Error in PUT /api/me:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+    });
+  }
+});
+
+// 12th API: POST - REGISTER NEW USER + hashing password:
 router.post("/register", async (req, res) => {
   try {
     const { name, email, password, role } = req.body;

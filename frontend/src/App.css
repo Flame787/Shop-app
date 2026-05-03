@@ -863,13 +863,18 @@ mark {
   transition: all 0.3s ease;
 }
 
-.input-div {
+.input-div,
+.input-div-horizontal {
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 6px;
   margin-bottom: 16px;
   padding: 5px 20px;
+}
+
+.input-div-horizontal {
+  flex-direction: row;
 }
 
 .input-div input {
@@ -907,6 +912,29 @@ mark {
   justify-content: center;
   flex-direction: column;
   margin: 20px auto 40px;
+}
+
+.save-changes-div {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  border-top: 1px solid #a2a6a7;
+  padding-top: 40px;
+  margin-bottom: 20px;
+}
+
+.save-changes-div button {
+  width: 180px;
+}
+
+.change-button {
+  margin-right: 20px;
+  cursor: pointer;
+}
+
+.save-changes-button {
+  cursor: pointer;
 }
 
 @media (max-width: 1465px) {
