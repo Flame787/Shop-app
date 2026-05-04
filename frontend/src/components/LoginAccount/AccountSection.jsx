@@ -1,7 +1,8 @@
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 export default function AccountSection() {
   const user = useSelector((state) => state.auth.user);
@@ -18,6 +19,8 @@ export default function AccountSection() {
     email: "",
   });
 
+  const [originalUserData, setOriginalUserData] = useState({});
+
   const [editableFields, setEditableFields] = useState({
     email: false,
     username: false,
@@ -27,6 +30,15 @@ export default function AccountSection() {
     country: false,
     phone: false,
   });
+
+  // Refs for input fields to focus them when Edit is clicked
+  const emailRef = useRef(null);
+  const usernameRef = useRef(null);
+  const addressRef = useRef(null);
+  const cityRef = useRef(null);
+  const postalRef = useRef(null);
+  const countryRef = useRef(null);
+  const phoneRef = useRef(null);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
@@ -43,8 +55,88 @@ export default function AccountSection() {
     }));
   };
 
+  const handleCancelField = (fieldName) => {
+    // Reset the field value to original data
+    setUserData((prev) => ({
+      ...prev,
+      [fieldName]: originalUserData[fieldName],
+    }));
+
+    // Set field back to non-editable mode
+    setEditableFields((prev) => ({
+      ...prev,
+      [fieldName]: false,
+    }));
+  };
+
+  // Focus input field when it's set to editable mode
+  useEffect(() => {
+    if (editableFields.email && emailRef.current) emailRef.current.focus();
+    if (editableFields.username && usernameRef.current) usernameRef.current.focus();
+    if (editableFields.address && addressRef.current) addressRef.current.focus();
+    if (editableFields.city && cityRef.current) cityRef.current.focus();
+    if (editableFields.postal && postalRef.current) postalRef.current.focus();
+    if (editableFields.country && countryRef.current) countryRef.current.focus();
+    if (editableFields.phone && phoneRef.current) phoneRef.current.focus();
+  }, [editableFields]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Validate input data
+    const errors = [];
+
+    // Email validation (required)
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(userData.email)) {
+      errors.push("Please enter a valid email address.");
+    }
+
+    // Postal code validation (only if filled - should be numeric)
+    if (userData.postal && !/^\d+$/.test(userData.postal)) {
+      errors.push("Postal code must contain only numbers.");
+    }
+
+    // Phone validation (optional: allow numbers, spaces, +, -, () only if filled)
+    if (userData.phone && !/^[\d\s\+\-\(\)]+$/.test(userData.phone)) {
+      errors.push("Phone number can only contain numbers, spaces, and symbols (+, -, (, )).");
+    }
+
+    // Country validation (optional: only letters and spaces)
+    if (userData.country && !/^[\p{L}\s]+$/u.test(userData.country)) {
+      errors.push("Country can only contain letters and spaces.");
+    }
+
+    // Required fields validation (only Name and Email are required)
+    if (!userData.username.trim()) {
+      errors.push("Name is required.");
+    }
+    if (!userData.email.trim()) {
+      errors.push("Email is required.");
+    }
+
+    if (errors.length > 0) {
+      errors.forEach((error) => {
+        toast.error(error);
+      });
+      return;
+    }
+
+    // Determine which fields have changed (for toast notifications only)
+    const changedFields = {};
+    Object.keys({
+      username: "Name",
+      email: "Email",
+      address: "Address",
+      city: "City",
+      postal: "Postal code",
+      country: "Country",
+      phone: "Phone",
+    }).forEach((field) => {
+      if (userData[field] !== originalUserData[field]) {
+        changedFields[field] = true;
+      }
+    });
 
     try {
       const response = await axios.put(
@@ -66,16 +158,20 @@ export default function AccountSection() {
       );
 
       const data = response.data.data;
-      setUserData((prev) => ({
-        ...prev,
-        username: data.name || prev.username,
-        email: data.email || prev.email,
-        address: data.street || prev.address,
-        city: data.city || prev.city,
-        postal: data.postal_code || prev.postal,
-        country: data.country || prev.country,
-        phone: data.phone || prev.phone,
-      }));
+      const updatedUserData = {
+        ...userData,
+        username: data.name || userData.username,
+        email: data.email || userData.email,
+        address: data.street || userData.address,
+        city: data.city || userData.city,
+        postal: data.postal_code || userData.postal,
+        country: data.country || userData.country,
+        phone: data.phone || userData.phone,
+      };
+
+      setUserData(updatedUserData);
+      setOriginalUserData(updatedUserData); // Update original data to the new values
+
       setEditableFields({
         email: false,
         username: false,
@@ -85,10 +181,41 @@ export default function AccountSection() {
         country: false,
         phone: false,
       });
-      alert("Changes saved successfully.");
+
+      // Show success toasts for changed fields
+      const fieldLabels = {
+        username: "Name",
+        email: "Email",
+        address: "Address",
+        city: "City",
+        postal: "Postal code",
+        country: "Country",
+        phone: "Phone",
+      };
+
+      Object.keys(changedFields).forEach((field) => {
+        toast(
+          <div>
+            <span className="checkmark">✓</span>{" "}
+            <span className="toast-itemname">{fieldLabels[field]}</span> updated successfully
+          </div>
+        );
+      });
     } catch (error) {
       console.error("Error saving profile:", error);
-      alert("Unable to save changes. Please try again.");
+      
+      // Reset all editable fields even if there's an error
+      setEditableFields({
+        email: false,
+        username: false,
+        address: false,
+        city: false,
+        postal: false,
+        country: false,
+        phone: false,
+      });
+      
+      toast.error("Unable to save changes. Please try again.");
     }
   };
 
@@ -104,7 +231,7 @@ export default function AccountSection() {
         const fullName = data.name || "";
         const [firstName, ...lastNameParts] = fullName.split(" ");
 
-        setUserData({
+        const userDataObj = {
           username: fullName,
           password: "********",
           fname: firstName || "",
@@ -115,7 +242,10 @@ export default function AccountSection() {
           country: data.country || "",
           phone: data.phone || "",
           email: data.email || "",
-        });
+        };
+
+        setUserData(userDataObj);
+        setOriginalUserData(userDataObj);
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
@@ -139,14 +269,16 @@ export default function AccountSection() {
               value={userData.email}
               onChange={handleInputChange}
               readOnly={!editableFields.email}
+              ref={emailRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("email")}
+            onClick={() => editableFields.email ? handleCancelField("email") : handleEditField("email")}
+            style={editableFields.email ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.email ? "Cancel" : "Edit"}
           </button>
         </div>
 
@@ -176,14 +308,16 @@ export default function AccountSection() {
               value={userData.username}
               onChange={handleInputChange}
               readOnly={!editableFields.username}
+              ref={usernameRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("username")}
+            onClick={() => editableFields.username ? handleCancelField("username") : handleEditField("username")}
+            style={editableFields.username ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.username ? "Cancel" : "Edit"}
           </button>
         </div>
 
@@ -197,14 +331,16 @@ export default function AccountSection() {
               value={userData.address}
               onChange={handleInputChange}
               readOnly={!editableFields.address}
+              ref={addressRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("address")}
+            onClick={() => editableFields.address ? handleCancelField("address") : handleEditField("address")}
+            style={editableFields.address ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.address ? "Cancel" : "Edit"}
           </button>
         </div>
         <div className="div-center">
@@ -217,14 +353,17 @@ export default function AccountSection() {
               value={userData.city}
               onChange={handleInputChange}
               readOnly={!editableFields.city}
+              autoComplete="off"
+              ref={cityRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("city")}
+            onClick={() => editableFields.city ? handleCancelField("city") : handleEditField("city")}
+            style={editableFields.city ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.city ? "Cancel" : "Edit"}
           </button>
         </div>
         <div className="div-center">
@@ -237,14 +376,17 @@ export default function AccountSection() {
               value={userData.postal}
               onChange={handleInputChange}
               readOnly={!editableFields.postal}
+              autoComplete="off"
+              ref={postalRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("postal")}
+            onClick={() => editableFields.postal ? handleCancelField("postal") : handleEditField("postal")}
+            style={editableFields.postal ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.postal ? "Cancel" : "Edit"}
           </button>
         </div>
         <div className="div-center">
@@ -257,14 +399,17 @@ export default function AccountSection() {
               value={userData.country}
               onChange={handleInputChange}
               readOnly={!editableFields.country}
+              autoComplete="off"
+              ref={countryRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("country")}
+            onClick={() => editableFields.country ? handleCancelField("country") : handleEditField("country")}
+            style={editableFields.country ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.country ? "Cancel" : "Edit"}
           </button>
         </div>
         <div className="div-center">
@@ -277,14 +422,16 @@ export default function AccountSection() {
               value={userData.phone}
               onChange={handleInputChange}
               readOnly={!editableFields.phone}
+              ref={phoneRef}
             />
           </div>
           <button
             className="link change-button"
             type="button"
-            onClick={() => handleEditField("phone")}
+            onClick={() => editableFields.phone ? handleCancelField("phone") : handleEditField("phone")}
+            style={editableFields.phone ? { background: "#e6991d", color: "#fff" } : undefined}
           >
-            Edit
+            {editableFields.phone ? "Cancel" : "Edit"}
           </button>
         </div>
 
@@ -321,3 +468,12 @@ WHERE customer_id = 1;
 
 // important to have 'WHERE' and customer_id, otherwise all customers in DB would be updated with this same data! 
 */
+
+/* Next steps:
+- instead of current browser alert pop-up when user info is successfully updated, implement Toast notification (a small message that appears at the bottom of the screen and disappears after a few seconds) to show success or error messages when user tries to save changes on the Account page
+- add alerts if user tries to enter invalid data (e.g. invalid email format, or postal code that contains letters instead of numbers, etc.)
+- change button Edit behavior depending if in Edit mode or not (if in Edit mode, button should say "Cancel", and when we click on Cancel, we should reset the input field value to the original value from DB, and set this field back to non-editable mode)
+- enable editing password as well (for now, password field is read-only, and Edit button for password is disabled, but we can enable it and allow user to change password if they want to)
+- handle Sign up form in a similar way (currently, we have only Login form, but we can also create a Signup form, similar to the Account page,where user can enter all their data, and when they submit the form, we send POST request to backend to create new user in DB)
+- add the possibility to delete the account (add "Delete account" button, and when user clicks on it, show a confirmation dialog, and if user confirms, send DELETE request to backend to delete the user account from DB, and then log out the user and redirect to Home page)
+ */

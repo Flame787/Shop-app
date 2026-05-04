@@ -883,6 +883,16 @@ mark {
   padding: 4px;
 }
 
+/* Prevent Chrome autofill styling on input fields */
+.input-div input:-webkit-autofill,
+.input-div input:-webkit-autofill:hover,
+.input-div input:-webkit-autofill:focus,
+.input-div input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 30px white inset !important;
+  -webkit-text-fill-color: #333 !important;
+  caret-color: #333 !important;
+}
+
 .login-modal-button {
   display: flex;
   align-items: center;
