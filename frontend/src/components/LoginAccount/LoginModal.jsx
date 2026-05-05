@@ -1,7 +1,7 @@
 import { useDispatch } from "react-redux";
 import { login, closeModal } from "../../redux-store/authSlice";
 import Modal from "../reusable/Modal";
-import axios from "axios";
+import axiosInstance from "../../util/axiosConfig";
 
 export default function LoginModal() {
   const dispatch = useDispatch();
@@ -23,15 +23,11 @@ export default function LoginModal() {
     // );
 
     try {
-      const response = await axios.post(
-        "http://localhost:5000/api/login",
+      const response = await axiosInstance.post(
+        "/api/login",
         {
           email: username,   // under "email", we pass the username, which is entered in the username-input field of the form
           password: password,  // under "password", we pass the password, which is entered in the password-input field of the form
-        },
-        {
-          withCredentials: true, // important for sending httpOnly refresh-cookie, because without this option, the cookie will not be sent to the backend, 
-          // and we won't be able to refresh the access token when it expires
         },
       );
 

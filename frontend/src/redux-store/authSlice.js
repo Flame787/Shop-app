@@ -29,6 +29,16 @@ const authSlice = createSlice({
       state.user = null;
       state.token = null;
     },
+    restoreSession: (state, action) => {
+      // Used to restore session from HttpOnly cookie on app load
+      state.isLoggedIn = true;
+      state.role = action.payload.role;
+      state.user = action.payload.user;
+      state.token = action.payload.token;
+    },
+    setToken: (state, action) => {
+      state.token = action.payload;
+    },
     openModal: (state) => {
       state.openLoginModal = true;
     },
@@ -38,5 +48,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { login, logout, openModal, closeModal } = authSlice.actions;
+export const { login, logout, restoreSession, setToken, openModal, closeModal } = authSlice.actions;
 export default authSlice.reducer;

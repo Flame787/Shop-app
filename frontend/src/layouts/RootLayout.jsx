@@ -1,4 +1,5 @@
 import axios from "axios";
+import axiosInstance from "../util/axiosConfig";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
@@ -10,7 +11,8 @@ import "react-toastify/dist/ReactToastify.css";
 // Toastify - for instant notifications (setting up here in RootLayout component, so nofitications can be used in any child-component)
 import SearchItems from "../components/Category/SearchItems";
 import LoginModal from "../components/LoginAccount/LoginModal";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { restoreSession } from "../redux-store/authSlice";
 
 export default function RootLayout() {
   // keeping the state about which category was selected, because Rootlayout is wrapping the CategoriesBox-component:
@@ -26,8 +28,41 @@ export default function RootLayout() {
   const [sortCriteria, setSortCriteria] = useState("default");
 
   const openLoginModal = useSelector((state) => state.auth.openLoginModal);
+  const dispatch = useDispatch();
+
+  // On app load, try to restore user session from HttpOnly cookie if it exists
+  useEffect(() => {
+    const restoreUserSession = async () => {
+      try {
+        const response = await axiosInstance.post("/api/refresh");
+        const { accessToken } = response.data;
+
+        // Get user info from /api/me endpoint using the new access token
+        const userResponse = await axiosInstance.get("/api/me", {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+
+        const userData = userResponse.data.data;
+        dispatch(
+          restoreSession({
+            role: userData.role,
+            user: { id: userData.customer_id, email: userData.email },
+            token: accessToken,
+          })
+        );
+      } catch (error) {
+        // User is not logged in or refresh token is invalid/expired - this is expected
+        console.log("No active session found");
+      }
+    };
+
+    restoreUserSession();
+  }, [dispatch]);
 
   useEffect(() => {
+
     // every time a route changes, we reset searchWord-state to "", so Outlet-pages can be rendered, instead of search-results
     // when a route changes, we also reset sortCriteria-state to "default", so that sortCriteria no longer apply on a new page: default view again
     setSearchWord("");
@@ -44,8 +79,8 @@ export default function RootLayout() {
     queryKey: ["products", sortCriteria], // now 'queryKey'-cache saves the 'sortCriteria' too, not just the fetched-products-list
     queryFn: async () => {
       console.log("Fetching with sort:", sortCriteria); // test if sortCriteria is passed to fetching-function
-      const res = await axios.get(
-        `${process.env.REACT_APP_API_URL}/api/items`,
+      const res = await axiosInstance.get(
+        `/api/items`,
         { params: { sort: sortCriteria } } // adding the query-parameter to url, e.g. http://localhost:5000/api/items?sort=a-z
       );
       return res.data.data;

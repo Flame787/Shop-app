@@ -1,4 +1,4 @@
-import { createContext, useReducer } from "react";
+import { createContext, useReducer, useEffect } from "react";
 
 // state managed in context - object with attributes: items, addItem, removeItem:
 const CartContext = createContext({
@@ -7,7 +7,44 @@ const CartContext = createContext({
   removeItem: (id) => {},
 });
 
-// using useReducer instead of useState, for managing more complex state:
+// Cart expiration time: 7 days in milliseconds
+const CART_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days
+
+// Helper function to load cart from localStorage with expiration check
+function loadCartFromLocalStorage() {
+  try {
+    const storedCart = localStorage.getItem("cart");
+    if (!storedCart) return { items: [] };
+
+    const { items, timestamp } = JSON.parse(storedCart);
+    const now = Date.now();
+
+    // Check if cart has expired (7 days)
+    if (now - timestamp > CART_EXPIRATION_TIME) {
+      localStorage.removeItem("cart");
+      console.log("Cart expired - cleared");
+      return { items: [] };
+    }
+
+    return { items };
+  } catch (error) {
+    console.error("Error loading cart from localStorage:", error);
+    return { items: [] };
+  }
+}
+
+// Helper function to save cart to localStorage with timestamp
+function saveCartToLocalStorage(items) {
+  try {
+    const cartData = {
+      items,
+      timestamp: Date.now(),
+    };
+    localStorage.setItem("cart", JSON.stringify(cartData));
+  } catch (error) {
+    console.error("Error saving cart to localStorage:", error);
+  }
+}
 function cartReducer(state, action) {
   if (action.type === "ADD_ITEM") {
     // update the state, to add a product to the cart
@@ -82,14 +119,21 @@ function cartReducer(state, action) {
     return { ...state, items: updatedItems };
   }
 
+  if (action.type === "CLEAR_CART") {
+    return { ...state, items: [] };
+  }
+
   return state;
 }
 
 export function CartContextProvider({ children }) {
-  const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] });
-  // destructuring the state that is returned by useReducer-hook: 1st part is cart-state, 2nd part is dispatchCartAction
-  // 1st parameter of useReducer-hook: passing the name of reducer-function (not calling it, just passing it)
-  // 2nd parameter of useReducer-hook: initial state, when component renders for the first time.
+  const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] }, loadCartFromLocalStorage);
+  // 3rd parameter: initializer function to load cart from localStorage instead of using empty array
+  
+  // Save cart to localStorage whenever items change
+  useEffect(() => {
+    saveCartToLocalStorage(cart.items);
+  }, [cart.items]);
 
   function addItem(item) {
     dispatchCartAction({ type: "ADD_ITEM", item: item });
@@ -111,6 +155,11 @@ export function CartContextProvider({ children }) {
     dispatchCartAction({ type: "DELETE_ITEM", id });
   }
 
+  function clearCart() {
+    dispatchCartAction({ type: "CLEAR_CART" });
+    localStorage.removeItem("cart");
+  }
+
   // passing the state to CartContextProvider (so other components can access it via useContext-hook):
   const cartContext = {
     items: cart.items,
@@ -118,6 +167,7 @@ export function CartContextProvider({ children }) {
     removeItem: removeItem,
     updateItemQuantity,
     deleteItem,
+    clearCart,
   };
 
   console.log("cartContext:", cartContext);
