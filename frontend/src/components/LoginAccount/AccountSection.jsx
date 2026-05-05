@@ -1,16 +1,19 @@
 import { useSelector } from "react-redux";
 import { NavLink } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import axios from "axios";
+import axiosInstance from "../../util/axiosConfig";
 import { toast } from "react-toastify";
 
 export default function AccountSection() {
   const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+  const PASSWORD_PLACEHOLDER = "************";
 
   const [userData, setUserData] = useState({
     username: "",
-    password: "********",
+    password: PASSWORD_PLACEHOLDER,
+    confirmPassword: "",
     address: "",
     city: "",
     postal: "",
@@ -24,6 +27,7 @@ export default function AccountSection() {
   const [editableFields, setEditableFields] = useState({
     email: false,
     username: false,
+    password: false,
     address: false,
     city: false,
     postal: false,
@@ -34,6 +38,7 @@ export default function AccountSection() {
   // Refs for input fields to focus them when Edit is clicked
   const emailRef = useRef(null);
   const usernameRef = useRef(null);
+  const passwordRef = useRef(null);
   const addressRef = useRef(null);
   const cityRef = useRef(null);
   const postalRef = useRef(null);
@@ -53,16 +58,25 @@ export default function AccountSection() {
       ...prev,
       [fieldName]: true,
     }));
+
+    if (fieldName === "password" && userData.password === PASSWORD_PLACEHOLDER) {
+      setUserData((prev) => ({
+        ...prev,
+        password: "",
+      }));
+    }
   };
 
   const handleCancelField = (fieldName) => {
-    // Reset the field value to original data
+    const resetValue =
+      fieldName === "password" ? PASSWORD_PLACEHOLDER : originalUserData[fieldName];
+
     setUserData((prev) => ({
       ...prev,
-      [fieldName]: originalUserData[fieldName],
+      [fieldName]: resetValue,
+      ...(fieldName === "password" ? { confirmPassword: "" } : {}),
     }));
 
-    // Set field back to non-editable mode
     setEditableFields((prev) => ({
       ...prev,
       [fieldName]: false,
@@ -73,6 +87,7 @@ export default function AccountSection() {
   useEffect(() => {
     if (editableFields.email && emailRef.current) emailRef.current.focus();
     if (editableFields.username && usernameRef.current) usernameRef.current.focus();
+    if (editableFields.password && passwordRef.current) passwordRef.current.focus();
     if (editableFields.address && addressRef.current) addressRef.current.focus();
     if (editableFields.city && cityRef.current) cityRef.current.focus();
     if (editableFields.postal && postalRef.current) postalRef.current.focus();
@@ -101,7 +116,19 @@ export default function AccountSection() {
     if (userData.phone && !/^[\d\s\+\-\(\)]+$/.test(userData.phone)) {
       errors.push("Phone number can only contain numbers, spaces, and symbols (+, -, (, )).");
     }
+    // Password validation (optional when editing)
+    if (editableFields.password) {
+      if (!userData.password || userData.password === PASSWORD_PLACEHOLDER) {
+      } else if (userData.password.length < 8) {
+        errors.push("Password must be at least 8 characters long.");
+      }
 
+      if (userData.password !== userData.confirmPassword) {
+        errors.push(
+          "Please make sure that your new password is typed correctly in both fields."
+        );
+      }
+    }
     // Country validation (optional: only letters and spaces)
     if (userData.country && !/^[\p{L}\s]+$/u.test(userData.country)) {
       errors.push("Country can only contain letters and spaces.");
@@ -127,6 +154,7 @@ export default function AccountSection() {
     Object.keys({
       username: "Name",
       email: "Email",
+      password: "Password",
       address: "Address",
       city: "City",
       postal: "Postal code",
@@ -139,17 +167,27 @@ export default function AccountSection() {
     });
 
     try {
-      const response = await axios.put(
-        "http://localhost:5000/api/me",
-        {
-          name: userData.username,
-          email: userData.email,
-          phone: userData.phone,
-          street: userData.address,
-          city: userData.city,
-          postal_code: userData.postal,
-          country: userData.country,
-        },
+      const requestBody = {
+        name: userData.username,
+        email: userData.email,
+        phone: userData.phone,
+        street: userData.address,
+        city: userData.city,
+        postal_code: userData.postal,
+        country: userData.country,
+      };
+
+      if (
+        editableFields.password &&
+        userData.password &&
+        userData.password !== PASSWORD_PLACEHOLDER
+      ) {
+        requestBody.password = userData.password;
+      }
+
+      const response = await axiosInstance.put(
+        "/api/me",
+        requestBody,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -167,6 +205,8 @@ export default function AccountSection() {
         postal: data.postal_code || userData.postal,
         country: data.country || userData.country,
         phone: data.phone || userData.phone,
+        password: PASSWORD_PLACEHOLDER,
+        confirmPassword: "",
       };
 
       setUserData(updatedUserData);
@@ -175,6 +215,7 @@ export default function AccountSection() {
       setEditableFields({
         email: false,
         username: false,
+        password: false,
         address: false,
         city: false,
         postal: false,
@@ -186,6 +227,7 @@ export default function AccountSection() {
       const fieldLabels = {
         username: "Name",
         email: "Email",
+        password: "Password",
         address: "Address",
         city: "City",
         postal: "Postal code",
@@ -208,6 +250,7 @@ export default function AccountSection() {
       setEditableFields({
         email: false,
         username: false,
+        password: false,
         address: false,
         city: false,
         postal: false,
@@ -220,9 +263,26 @@ export default function AccountSection() {
   };
 
   useEffect(() => {
+    // Clear user data immediately when user logs out
+    if (!isLoggedIn) {
+      setUserData({
+        username: "",
+        password: PASSWORD_PLACEHOLDER,
+        confirmPassword: "",
+        address: "",
+        city: "",
+        postal: "",
+        country: "",
+        phone: "",
+        email: "",
+      });
+      setOriginalUserData({});
+      return;
+    }
+
     const fetchUserData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/me", {
+        const response = await axiosInstance.get("/api/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -233,7 +293,8 @@ export default function AccountSection() {
 
         const userDataObj = {
           username: fullName,
-          password: "********",
+          password: PASSWORD_PLACEHOLDER,
+          confirmPassword: "",
           fname: firstName || "",
           lname: lastNameParts.join(" ") || "",
           address: data.street || "",
@@ -254,14 +315,14 @@ export default function AccountSection() {
     if (token) {
       fetchUserData();
     }
-  }, [token]);
+  }, [token, isLoggedIn]);
 
   return (
     <section className="account-section">
       <form onSubmit={handleSubmit}>
         <div className="div-center">
           <div className="input-div">
-            <label htmlFor="email">Email address</label>
+            <label htmlFor="email">Email address <span style={{ color: "red" }}>*</span></label>
             <input
               type="text"
               id="email"
@@ -282,25 +343,50 @@ export default function AccountSection() {
           </button>
         </div>
 
-        <div className="div-center">
+        <div className="div-center password-div">
           <div className="input-div">
-            <label htmlFor="password">Password</label>
+            <label htmlFor="password">Password <span style={{ color: "red" }}>*</span></label>
             <input
               type="password"
               id="password"
               name="password"
               value={userData.password}
-              readOnly
+              onChange={handleInputChange}
+              readOnly={!editableFields.password}
+              ref={passwordRef}
+              autoComplete="new-password"
             />
           </div>
-          <button className="link change-button" type="button" disabled>
-            Edit
+          <button
+            className="link change-button"
+            type="button"
+            onClick={() =>
+              editableFields.password
+                ? handleCancelField("password")
+                : handleEditField("password")
+            }
+            style={editableFields.password ? { background: "#e6991d", color: "#fff" } : undefined}
+          >
+            {editableFields.password ? "Cancel" : "Edit"}
           </button>
+          {editableFields.password && (
+            <div className="input-div confirm-password-div" >
+              <label htmlFor="confirmPassword">Confirm Password</label>
+              <input
+                type="password"
+                id="confirmPassword"
+                name="confirmPassword"
+                value={userData.confirmPassword}
+                onChange={handleInputChange}
+                autoComplete="new-password"
+              />
+            </div>
+          )}
         </div>
 
         <div className="div-center">
           <div className="input-div">
-            <label htmlFor="username">Name</label>
+            <label htmlFor="username">Full name <span style={{ color: "red" }}>*</span></label>
             <input
               type="text"
               id="username"
@@ -469,11 +555,20 @@ WHERE customer_id = 1;
 // important to have 'WHERE' and customer_id, otherwise all customers in DB would be updated with this same data! 
 */
 
+// current password: test1234
+
 /* Next steps:
-- instead of current browser alert pop-up when user info is successfully updated, implement Toast notification (a small message that appears at the bottom of the screen and disappears after a few seconds) to show success or error messages when user tries to save changes on the Account page
-- add alerts if user tries to enter invalid data (e.g. invalid email format, or postal code that contains letters instead of numbers, etc.)
-- change button Edit behavior depending if in Edit mode or not (if in Edit mode, button should say "Cancel", and when we click on Cancel, we should reset the input field value to the original value from DB, and set this field back to non-editable mode)
-- enable editing password as well (for now, password field is read-only, and Edit button for password is disabled, but we can enable it and allow user to change password if they want to)
++ instead of current browser alert pop-up when user info is successfully updated, implement Toast notification (a small message that appears at the bottom of the screen and disappears after a few seconds) to show success or error messages when user tries to save changes on the Account page
++ add alerts if user tries to enter invalid data (e.g. invalid email format, or postal code that contains letters instead of numbers, etc.)
++ change button Edit behavior depending if in Edit mode or not (if in Edit mode, button should say "Cancel", and when we click on Cancel, we should reset the input field value to the original value from DB, and set this field back to non-editable mode)
++ enable editing password as well (for now, password field is read-only, and Edit button for password is disabled, but we can enable it and allow user to change password if they want to)
++ currently, when app reloads in browser, or when user manually changes the URL and goes from Account page (localhost:3000/account) to localhost:3000, the user is automatically logged out, because we store the token only in Redux state, and when app reloads, Redux state is reset to initial state (where token is null). 
+I want to change this, and use industry standard approach for storing the token, which is to store it in HttpOnly cookie (instead of localStorage or Redux state), so that when user reloads the page, the token is still stored in cookie and user remains logged in.
+- when user has logged out, Cart items should be cleared and not stay available in the Cart. Cart items should be related to the user session, and we should decide how long the session lasts. For example, it can last for 7 days and then user has to log in again. 
+We can implement this by setting an expiration time for the HttpOnly cookie that stores the token, and when the cookie expires, the user is automatically logged out and Cart items are cleared.
++ on Account page, add required fields marks (e.g. asterisk *) for fields that are required (e.g. Name and Email), and use red color for font. 
 - handle Sign up form in a similar way (currently, we have only Login form, but we can also create a Signup form, similar to the Account page,where user can enter all their data, and when they submit the form, we send POST request to backend to create new user in DB)
 - add the possibility to delete the account (add "Delete account" button, and when user clicks on it, show a confirmation dialog, and if user confirms, send DELETE request to backend to delete the user account from DB, and then log out the user and redirect to Home page)
+- if user has forgotten the password, add the button "Forgot password?" to the Login Form, and when user clicks on it, show a form where they can enter their email address, and when they submit the form, send POST request to backend to generate a password reset token and 
+send it to the user's email address, and then user can use that token to reset their password (this requires implementing additional backend API endpoints for password reset functionality)
  */

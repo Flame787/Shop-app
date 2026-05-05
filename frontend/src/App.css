@@ -1097,6 +1097,13 @@ mark {
   .footer-quarter {
     margin: 10px 10px;
   }
+  .password-div {
+    /* flex-direction: column; */
+    flex-wrap: wrap;
+    /* align-items: start; */
+     /* justify-content: center; */
+  }
+
 }
 
 /* mobile resolution: */

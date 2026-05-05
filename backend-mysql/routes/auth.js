@@ -130,14 +130,24 @@ router.put("/me", authenticateToken, async (req, res) => {
       city,
       postal_code,
       country,
+      password,
     } = req.body;
 
     const pool = await poolPromise;
-    await pool.query(
-      "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ? WHERE customer_id = ?",
-      [name, email, phone, street, city, postal_code, country, userId],
-    );
-    // we update all fields that user can edit on the Account page (name, email, phone, street, city, postal_code, country)
+
+    if (password) {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      await pool.query(
+        "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ?, password_hash = ? WHERE customer_id = ?",
+        [name, email, phone, street, city, postal_code, country, hashedPassword, userId],
+      );
+    } else {
+      await pool.query(
+        "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ? WHERE customer_id = ?",
+        [name, email, phone, street, city, postal_code, country, userId],
+      );
+    }
+    // we update all fields that user can edit on the Account page (name, email, phone, street, city, postal_code, country, password)
 
     const [rows] = await pool.query(
       "SELECT customer_id, name, email, role, date_registered, phone, street, city, postal_code, country FROM customers WHERE customer_id = ?",
@@ -229,6 +239,20 @@ router.post("/refresh", async (req, res) => {
     console.error("Refresh token error:", error);
     res.status(403).json({ success: false, message: "Invalid refresh token" });
   }
+});
+
+// 13th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
+router.post("/logout", (req, res) => {
+  res.clearCookie("refreshToken", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  res.status(200).json({
+    success: true,
+    message: "Logged out successfully",
+  });
 });
 
 module.exports = router;
