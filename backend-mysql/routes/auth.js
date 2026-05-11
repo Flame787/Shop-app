@@ -241,6 +241,64 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
+// Cart API: GET saved cart for the logged-in user
+router.get("/cart", authenticateToken, (req, res) => {
+  try {
+    const cartCookie = req.cookies.cart;
+    const cartData = cartCookie ? JSON.parse(cartCookie) : null;
+
+    if (!cartData || cartData.userId !== req.user.sub) {
+      if (cartData && cartData.userId !== req.user.sub) {
+        res.clearCookie("cart", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: "strict",
+        });
+      }
+      return res.status(200).json({ success: true, cart: { items: [] } });
+    }
+
+    res.status(200).json({ success: true, cart: { items: cartData.items || [] } });
+  } catch (error) {
+    console.error("Error reading cart cookie:", error);
+    res.status(500).json({ success: false, message: "Unable to read cart" });
+  }
+});
+
+// Cart API: SAVE cart for the logged-in user in httpOnly cookie
+router.post("/cart", authenticateToken, (req, res) => {
+  try {
+    const { items } = req.body;
+    const cart = {
+      userId: req.user.sub,
+      items: Array.isArray(items) ? items : [],
+    };
+
+    res.cookie("cart", JSON.stringify(cart), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({ success: true, cart });
+  } catch (error) {
+    console.error("Error saving cart cookie:", error);
+    res.status(500).json({ success: false, message: "Unable to save cart" });
+  }
+});
+
+// Cart API: clear stored cart for the logged-in user
+router.delete("/cart", authenticateToken, (req, res) => {
+  res.clearCookie("cart", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "strict",
+  });
+
+  res.status(200).json({ success: true, message: "Cart cleared" });
+});
+
 // 13th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
 router.post("/logout", (req, res) => {
   res.clearCookie("refreshToken", {
