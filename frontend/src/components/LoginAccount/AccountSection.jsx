@@ -555,6 +555,7 @@ WHERE customer_id = 1;
 // important to have 'WHERE' and customer_id, otherwise all customers in DB would be updated with this same data! 
 */
 
+// jimmy@test.com
 // current password: test1234
 
 /* Next steps:
@@ -564,7 +565,7 @@ WHERE customer_id = 1;
 + enable editing password as well (for now, password field is read-only, and Edit button for password is disabled, but we can enable it and allow user to change password if they want to)
 + currently, when app reloads in browser, or when user manually changes the URL and goes from Account page (localhost:3000/account) to localhost:3000, the user is automatically logged out, because we store the token only in Redux state, and when app reloads, Redux state is reset to initial state (where token is null). 
 I want to change this, and use industry standard approach for storing the token, which is to store it in HttpOnly cookie (instead of localStorage or Redux state), so that when user reloads the page, the token is still stored in cookie and user remains logged in.
-- when user has logged out, Cart items should be cleared and not stay available in the Cart. Cart items should be related to the user session, and we should decide how long the session lasts. For example, it can last for 7 days and then user has to log in again. 
++ when user has logged out, Cart items should be cleared and not stay available in the Cart. Cart items should be related to the user session, and we should decide how long the session lasts. For example, it can last for 7 days and then user has to log in again. 
 We can implement this by setting an expiration time for the HttpOnly cookie that stores the token, and when the cookie expires, the user is automatically logged out and Cart items are cleared.
 + on Account page, add required fields marks (e.g. asterisk *) for fields that are required (e.g. Name and Email), and use red color for font. 
 - handle Sign up form in a similar way (currently, we have only Login form, but we can also create a Signup form, similar to the Account page,where user can enter all their data, and when they submit the form, we send POST request to backend to create new user in DB)
@@ -572,3 +573,62 @@ We can implement this by setting an expiration time for the HttpOnly cookie that
 - if user has forgotten the password, add the button "Forgot password?" to the Login Form, and when user clicks on it, show a form where they can enter their email address, and when they submit the form, send POST request to backend to generate a password reset token and 
 send it to the user's email address, and then user can use that token to reset their password (this requires implementing additional backend API endpoints for password reset functionality)
  */
+
+
+/* 
+Cart items are now saved using **localStorage** with a 7-day expiration. Here's the complete process flow:
+
+## How Cart Items Are Saved Now
+
+### 1. **Initial Load (App Start)**
+- When the app loads, `CartContext` calls `loadCartFromLocalStorage()`
+- Checks if cart data exists in localStorage
+- If found, checks if it's older than 7 days
+- If expired → clears localStorage and starts with empty cart
+- If valid → loads saved items into cart state
+
+### 2. **Adding Items to Cart**
+- User adds items via `addItem()` function
+- Cart state updates immediately
+- `useEffect` in `CartContext` automatically saves to localStorage:
+  ```javascript
+  useEffect(() => {
+    saveCartToLocalStorage(cart.items);
+  }, [cart.items]);
+  ```
+
+### 3. **Saving to localStorage**
+- `saveCartToLocalStorage()` saves:
+  ```javascript
+  {
+    items: [...cart items...],
+    timestamp: Date.now()
+  }
+  ```
+- Data persists even after browser close/refresh
+
+### 4. **Cart Persistence Rules**
+- **Persists for 7 days** regardless of login status
+- **Clears only when:**
+  - User explicitly clicks "Log out" (calls `clearCart()`)
+  - Cart expires after 7 days of no activity
+  - User manually clears browser data
+
+### 5. **Login/Logout Behavior**
+- **Login:** Cart items remain available (no clearing)
+- **Logout:** Cart items stay saved for 7 days
+- **Session expire:** Cart items stay saved for 7 days
+
+### 6. **Data Structure in localStorage**
+```javascript
+localStorage.setItem("cart", JSON.stringify({
+  items: [
+    { id: 1, name: "Product", quantity: 2, price: 10.99 },
+    // ... other items
+  ],
+  timestamp: 1640995200000  // current timestamp
+}));
+```
+
+This ensures users don't lose their cart contents when logging in/out, and items persist across browser sessions for up to 7 days.
+  */

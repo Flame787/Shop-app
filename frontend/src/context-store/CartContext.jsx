@@ -1,4 +1,6 @@
-import { createContext, useReducer, useEffect } from "react";
+import { createContext, useReducer, useState, useEffect } from "react";
+import { useSelector } from "react-redux";
+import axiosInstance from "../util/axiosConfig";
 
 // state managed in context - object with attributes: items, addItem, removeItem:
 const CartContext = createContext({
@@ -7,44 +9,6 @@ const CartContext = createContext({
   removeItem: (id) => {},
 });
 
-// Cart expiration time: 7 days in milliseconds
-const CART_EXPIRATION_TIME = 7 * 24 * 60 * 60 * 1000; // 7 days
-
-// Helper function to load cart from localStorage with expiration check
-function loadCartFromLocalStorage() {
-  try {
-    const storedCart = localStorage.getItem("cart");
-    if (!storedCart) return { items: [] };
-
-    const { items, timestamp } = JSON.parse(storedCart);
-    const now = Date.now();
-
-    // Check if cart has expired (7 days)
-    if (now - timestamp > CART_EXPIRATION_TIME) {
-      localStorage.removeItem("cart");
-      console.log("Cart expired - cleared");
-      return { items: [] };
-    }
-
-    return { items };
-  } catch (error) {
-    console.error("Error loading cart from localStorage:", error);
-    return { items: [] };
-  }
-}
-
-// Helper function to save cart to localStorage with timestamp
-function saveCartToLocalStorage(items) {
-  try {
-    const cartData = {
-      items,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem("cart", JSON.stringify(cartData));
-  } catch (error) {
-    console.error("Error saving cart to localStorage:", error);
-  }
-}
 function cartReducer(state, action) {
   if (action.type === "ADD_ITEM") {
     // update the state, to add a product to the cart
@@ -119,6 +83,10 @@ function cartReducer(state, action) {
     return { ...state, items: updatedItems };
   }
 
+  if (action.type === "SET_CART") {
+    return { ...state, items: action.items };
+  }
+
   if (action.type === "CLEAR_CART") {
     return { ...state, items: [] };
   }
@@ -127,13 +95,50 @@ function cartReducer(state, action) {
 }
 
 export function CartContextProvider({ children }) {
-  const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] }, loadCartFromLocalStorage);
-  // 3rd parameter: initializer function to load cart from localStorage instead of using empty array
-  
-  // Save cart to localStorage whenever items change
+  const [cart, dispatchCartAction] = useReducer(cartReducer, { items: [] });
+  const [isCartLoaded, setIsCartLoaded] = useState(false);
+  const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
+
   useEffect(() => {
-    saveCartToLocalStorage(cart.items);
-  }, [cart.items]);
+    if (!isLoggedIn || !isCartLoaded) {
+      return;
+    }
+
+    const saveCart = async () => {
+      try {
+        await axiosInstance.post("/api/cart", { items: cart.items });
+      } catch (error) {
+        console.error("Error saving cart:", error);
+      }
+    };
+
+    saveCart();
+  }, [cart.items, isLoggedIn, isCartLoaded]);
+
+  useEffect(() => {
+    if (!isLoggedIn) {
+      setIsCartLoaded(false);
+      dispatchCartAction({ type: "CLEAR_CART" });
+      return;
+    }
+
+    const fetchCart = async () => {
+      try {
+        const response = await axiosInstance.get("/api/cart");
+        const savedCart = response.data.cart;
+
+        if (savedCart && Array.isArray(savedCart.items)) {
+          dispatchCartAction({ type: "SET_CART", items: savedCart.items });
+        }
+      } catch (error) {
+        console.error("Error loading cart:", error);
+      } finally {
+        setIsCartLoaded(true);
+      }
+    };
+
+    fetchCart();
+  }, [isLoggedIn]);
 
   function addItem(item) {
     dispatchCartAction({ type: "ADD_ITEM", item: item });
