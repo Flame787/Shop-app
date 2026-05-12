@@ -1,7 +1,7 @@
 // Log in / Log out button
 
 import { useSelector, useDispatch } from "react-redux";
-import { logout, openModal } from "../../redux-store/authSlice";
+import { logout, openLoginModal } from "../../redux-store/authSlice";
 import axiosInstance from "../../util/axiosConfig";
 
 export default function LogInOutButton() {
@@ -23,7 +23,7 @@ export default function LogInOutButton() {
 
   return (
     <div>
-      <button className="link login-button button-text" onClick={() => isLoggedIn ? handleLogout() : dispatch(openModal())}>
+      <button className="link login-button button-text" onClick={() => isLoggedIn ? handleLogout() : dispatch(openLoginModal())}>
         {isLoggedIn ? "Log out" : "Log in"}
       </button>
     </div>

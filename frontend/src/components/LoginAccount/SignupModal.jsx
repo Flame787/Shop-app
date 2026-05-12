@@ -4,7 +4,7 @@ import { login, closeModal } from "../../redux-store/authSlice";
 import Modal from "../reusable/Modal";
 import axiosInstance from "../../util/axiosConfig";
 
-export default function LoginModal() {
+export default function SignupModal() {
   const dispatch = useDispatch();
   const [errorMessage, setErrorMessage] = useState("");
 
@@ -30,13 +30,14 @@ export default function LoginModal() {
     return "";
   }
 
-  // what happens when the Login-form is submitted - we try to POST (send) entered email & password to backend:
+  // what happens when the Signup-form is submitted - we try to POST (send) entered email & password to backend:
   async function handleSubmit(e) {
     e.preventDefault();
     setErrorMessage("");
 
     const username = e.target.username.value;
     const password = e.target.password.value;
+    const confirmPassword = e.target.confirmPassword.value;
 
     // Validate password strength
     const passwordError = validatePassword(password);
@@ -45,18 +46,14 @@ export default function LoginModal() {
       return;
     }
 
-    // before we call real backend here (axios POST):
-    // dispatch(
-    //   login({
-    //     role: "user",
-    //     user: { username: "myname" },
-    //     token: "dummy-token",
-    //   })
-    // );
+    if (password !== confirmPassword) {
+      setErrorMessage("Passwords do not match.");
+      return;
+    }
 
     try {
       const response = await axiosInstance.post(
-        "/api/login",
+        "/api/signup",
         {
           email: username,   // under "email", we pass the username, which is entered in the username-input field of the form
           password: password,  // under "password", we pass the password, which is entered in the password-input field of the form
@@ -77,16 +74,16 @@ export default function LoginModal() {
 
       dispatch(closeModal());
     } catch (error) {
-      console.error("Login failed:", error);
-      setErrorMessage(error.response?.data?.message || "Login failed. Please try again.");
+      console.error("Signup failed:", error);
+      setErrorMessage(error.response?.data?.message || "Signup failed. Please try again.");
     }
   }
 
   return (
-    <Modal open={true} onClose={() => dispatch(closeModal())} className="login-modal">
+    <Modal open={true} onClose={() => dispatch(closeModal())} className="signup-modal">
       <form onSubmit={handleSubmit}>
         {/* Never use GET to send sensitive data! (will be visible in the URL). Use POST instead - when using POST, data is not shown in URL. */}
-        <h3>Log in</h3>
+        <h3>Sign up</h3>
         {errorMessage && <p className="error-message">{errorMessage}</p>}
         <div className="input-div">
           <label htmlFor="username">Email</label>
@@ -95,28 +92,24 @@ export default function LoginModal() {
         <div className="input-div">
           <label htmlFor="password">Password</label>
           <input type="password" id="password" name="password" />
-          {/* <small className="password-requirements">
+          <small className="password-requirements">
             Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.
-          </small> */}
+          </small>
           {/* If the name attribute is omitted, the value of the input field will not be sent at all. */}
         </div>
-        <button className="login-modal-button">Log in</button>
+        <div className="input-div">
+          <label htmlFor="confirmPassword">Confirm password</label>
+          <input type="password" id="confirmPassword" name="confirmPassword" />
+          {/* If the name attribute is omitted, the value of the input field will not be sent at all. */}
+        </div>
+        <button className="signup-modal-button">Sign up</button>
       </form>
     </Modal>
   );
 }
 
 
-// jimmy@test.com
-// current password: test1234
-
-// mike123@test.com
-// MikeMike123
-
-
 /* 
-- Password validation enforcing 8+ characters with uppercase, lowercase, and number
-- Error message state instead of alerts for better UX
-- Info message displaying password requirements
-- Detailed error messages when validation fails
- */
+The password validation - typical shop app standards: at least 8 characters, with at least one uppercase letter, 
+one lowercase letter, and one number. Special characters are allowed but not required.
+*/

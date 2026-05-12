@@ -11,6 +11,7 @@ import "react-toastify/dist/ReactToastify.css";
 // Toastify - for instant notifications (setting up here in RootLayout component, so nofitications can be used in any child-component)
 import SearchItems from "../components/Category/SearchItems";
 import LoginModal from "../components/LoginAccount/LoginModal";
+import SignupModal from "../components/LoginAccount/SignupModal";
 import { useSelector, useDispatch } from "react-redux";
 import { restoreSession } from "../redux-store/authSlice";
 
@@ -27,7 +28,7 @@ export default function RootLayout() {
   // state for sorting (saving info on which sorting-criteria was selected):
   const [sortCriteria, setSortCriteria] = useState("default");
 
-  const openLoginModal = useSelector((state) => state.auth.openLoginModal);
+  const modalType = useSelector((state) => state.auth.modalType);
   const dispatch = useDispatch();
 
   // On app load, try to restore user session from HttpOnly cookie if it exists
@@ -135,7 +136,8 @@ Then any of the pages inherits what was written in the search-input, or can rese
         draggable
         theme="light"
       />
-      {openLoginModal && <LoginModal />}
+      {modalType === 'login' && <LoginModal />}
+      {modalType === 'signup' && <SignupModal />}
     </>
   );
 }

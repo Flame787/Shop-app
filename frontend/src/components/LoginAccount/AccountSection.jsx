@@ -83,6 +83,28 @@ export default function AccountSection() {
     }));
   };
 
+  // Password validation function
+  function validatePassword(password) {
+    const minLength = 8;
+    const hasUpperCase = /[A-Z]/.test(password);
+    const hasLowerCase = /[a-z]/.test(password);
+    const hasNumbers = /\d/.test(password);
+
+    if (password.length < minLength) {
+      return "Password must be at least 8 characters long.";
+    }
+    if (!hasUpperCase) {
+      return "Password must contain at least one uppercase letter.";
+    }
+    if (!hasLowerCase) {
+      return "Password must contain at least one lowercase letter.";
+    }
+    if (!hasNumbers) {
+      return "Password must contain at least one number.";
+    }
+    return "";
+  }
+
   // Focus input field when it's set to editable mode
   useEffect(() => {
     if (editableFields.email && emailRef.current) emailRef.current.focus();
@@ -119,11 +141,16 @@ export default function AccountSection() {
     // Password validation (optional when editing)
     if (editableFields.password) {
       if (!userData.password || userData.password === PASSWORD_PLACEHOLDER) {
-      } else if (userData.password.length < 8) {
-        errors.push("Password must be at least 8 characters long.");
+        // Password is optional if not being edited
+      } else {
+        // Validate password strength
+        const passwordError = validatePassword(userData.password);
+        if (passwordError) {
+          errors.push(passwordError);
+        }
       }
 
-      if (userData.password !== userData.confirmPassword) {
+      if (userData.password && userData.password !== PASSWORD_PLACEHOLDER && userData.password !== userData.confirmPassword) {
         errors.push(
           "Please make sure that your new password is typed correctly in both fields."
         );
@@ -343,7 +370,7 @@ export default function AccountSection() {
           </button>
         </div>
 
-        <div className="div-center password-div">
+        <div className="div-center ">
           <div className="input-div">
             <label htmlFor="password">Password <span style={{ color: "red" }}>*</span></label>
             <input
@@ -369,24 +396,32 @@ export default function AccountSection() {
           >
             {editableFields.password ? "Cancel" : "Edit"}
           </button>
-          {editableFields.password && (
-            <div className="input-div confirm-password-div" >
-              <label htmlFor="confirmPassword">Confirm Password</label>
-              <input
-                type="password"
-                id="confirmPassword"
-                name="confirmPassword"
-                value={userData.confirmPassword}
-                onChange={handleInputChange}
-                autoComplete="new-password"
-              />
-            </div>
-          )}
+          
         </div>
+
+        {editableFields.password && (
+            <> <div className="password-requirements"><small>
+                Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.
+              </small></div>
+              
+              <div className="input-div confirm-password-div" >
+                <label htmlFor="confirmPassword">Confirm Password <span style={{ color: "red" }}>*</span></label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={userData.confirmPassword}
+                  onChange={handleInputChange}
+                  autoComplete="new-password"
+                />
+              </div>
+              
+            </>
+          )}
 
         <div className="div-center">
           <div className="input-div">
-            <label htmlFor="username">Full name <span style={{ color: "red" }}>*</span></label>
+            <label htmlFor="username">Full name </label>
             <input
               type="text"
               id="username"
