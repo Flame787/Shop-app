@@ -466,7 +466,7 @@ main {
   background: linear-gradient(145deg, #f6f6f6, #f5f3f3);
   border-width: 0;
   width: 115px;
-  font-weight: 100;
+  font-weight: bold;
 }
 
 .category-link.active-link {
@@ -703,18 +703,26 @@ img.cart-image.product-image {
   flex-wrap: wrap;
 }
 
+/* 1st block with logo in footer has no visible background, and other will have dark background: */
+.four-footer-sections :first-child {
+  background: none;
+}
+
 .footer-quarter {
   display: flex;
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
   flex-direction: column;
-  background-color: #f0f0f0;
+  /* background-color: #f0f0f0; */
+  /* background-color: black; */
+  background: linear-gradient(145deg, #2d2d2d, #3c3c3c);
   border-radius: 8px;
   margin: 40px 20px;
   width: 300px;
   height: 220px;
 }
+
 
 .footer-quarter.footer-logo {
   background-color: transparent;
@@ -728,10 +736,17 @@ img.cart-image.product-image {
 .footer-text {
   /* width: 100%; */
   padding: 0 20px;
+  color: white;
+}
+
+.footer-text p a {
+  color: black;
+  color: white;
 }
 
 .footer-quarter h3 {
   text-align: center;
+  color: #e6991d;
   /* width: 100%; */
 }
 
@@ -861,6 +876,16 @@ mark {
   font-weight: bold;
   cursor: pointer;
   transition: all 0.3s ease;
+  text-decoration: none;
+}
+
+a:-webkit-any-link {
+  text-decoration: none;
+  color: white;
+}
+
+a:-webkit-any-link:hover {
+  color: #e6991d;
 }
 
 .input-div,
@@ -893,7 +918,8 @@ mark {
   caret-color: #333 !important;
 }
 
-.login-modal-button {
+.login-modal-button,
+.signup-modal-button {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -904,7 +930,7 @@ mark {
   font-size: 1rem;
   font-weight: bold;
   cursor: pointer;
-  width: 80%;
+  width: 153px;
   margin: 20px auto;
   transition: all 0.3s ease;
 }
@@ -945,6 +971,60 @@ mark {
 
 .save-changes-button {
   cursor: pointer;
+}
+
+.password-requirements {
+  display: flex;
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  width: 250px;
+  margin: 5px auto 10px;
+  text-align: justify;
+}
+
+.confirm-password-div {
+  flex-direction: column;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  margin-left: 3px;
+}
+
+.confirm-password-div label {
+  font-weight: bold;
+  margin-left: 7px;
+}
+
+.confirm-password-div label span {
+  font-weight: normal;
+}
+
+.signup-modal {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  flex-direction: column;
+  margin: auto;
+  /* margin: auto, to position the modal in the center of the page */
+  padding: 20px;
+  padding-top: 50px;
+  border-radius: 10px;
+  border: none;
+}
+
+.signup-modal h3 {
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.error-message {
+  text-align: center;
+  color: red;
+  padding-bottom: 10px;
 }
 
 @media (max-width: 1465px) {
@@ -1074,6 +1154,25 @@ mark {
   }
 }
 
+/* @media (max-width: 740px) {
+  .confirm-password-div {
+    margin-left: 15%;
+    align-items: start;
+  }
+} */
+
+/* @media (max-width: 666px) {
+  .confirm-password-div {
+    margin-left: 10%;
+  }
+} */
+
+/* @media (max-width: 605px) {
+  .confirm-password-div {
+    margin-left: 13%;
+  }
+} */
+
 @media (max-width: 548px) {
   .categories {
     column-gap: 2px;
@@ -1097,14 +1196,28 @@ mark {
   .footer-quarter {
     margin: 10px 10px;
   }
-  .password-div {
-    /* flex-direction: column; */
+  /* .password-div {
+    flex-direction: column;
     flex-wrap: wrap;
-    /* align-items: start; */
-     /* justify-content: center; */
-  }
-
+    align-items: start;
+    justify-content: center;
+  } */
+  /* .confirm-password-div {
+    margin-left: 12%;
+  } */
 }
+
+/* @media (max-width: 470px) {
+  .confirm-password-div {
+    margin-left: 8%;
+  }
+}
+
+@media (max-width: 430px) {
+  .confirm-password-div {
+    margin-left: 9%;
+  }
+} */
 
 /* mobile resolution: */
 @media (max-width: 380px) {
@@ -1120,4 +1233,13 @@ mark {
   .header-top-center-small {
     padding-top: 170px;
   }
+  /* .confirm-password-div {
+    margin-left: 7%;
+  } */
 }
+
+/* @media (max-width: 344px) {
+  .confirm-password-div {
+    margin-left: 5%;
+  }
+} */

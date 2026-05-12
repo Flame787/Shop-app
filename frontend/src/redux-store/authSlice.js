@@ -8,7 +8,7 @@ const initialState = {
   role: null,
   user: null,
   token: null,
-  openLoginModal: false,
+  modalType: null, // 'login' or 'signup'
 };
 
 // createSlice contains reducer-functions (reducers) which use Immer library to enable changing state in immutable way (no spread-operator needed)
@@ -21,7 +21,7 @@ const authSlice = createSlice({
       state.role = action.payload.role;
       state.user = action.payload.user;
       state.token = action.payload.token;
-      state.openLoginModal = false;       // close Modal after login was successful
+      state.modalType = null;       // close Modal after login was successful
     },
     logout: (state, action) => {
       state.isLoggedIn = false;
@@ -39,14 +39,17 @@ const authSlice = createSlice({
     setToken: (state, action) => {
       state.token = action.payload;
     },
-    openModal: (state) => {
-      state.openLoginModal = true;
+    openLoginModal: (state) => {
+      state.modalType = 'login';
+    },
+    openSignupModal: (state) => {
+      state.modalType = 'signup';
     },
     closeModal: (state) => {
-      state.openLoginModal = false;
+      state.modalType = null;
     },
   },
 });
 
-export const { login, logout, restoreSession, setToken, openModal, closeModal } = authSlice.actions;
+export const { login, logout, restoreSession, setToken, openLoginModal, openSignupModal, closeModal } = authSlice.actions;
 export default authSlice.reducer;

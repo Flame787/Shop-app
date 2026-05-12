@@ -1,5 +1,6 @@
 import { createPortal } from "react-dom";
 import { useRef, useEffect } from "react";
+import { NavLink } from "react-router-dom";
 
 export default function Modal({ children, open, onClose, className = "" }) {
   // open-prop - controls if the dialog is open or not
@@ -29,12 +30,17 @@ export default function Modal({ children, open, onClose, className = "" }) {
 
   return createPortal(
     <dialog ref={dialog} className={`modal ${className}`}>
-      <div className="button-close-div"><button className="modal-close-btn" onClick={onClose}>
-        ✕
-      </button></div>
+      <div className="button-close-div modal-close-btn" onClick={onClose}><NavLink
+          to="/"
+         
+        >
+          ✕
+        </NavLink>
+        
+      </div>
       <div>{children}</div>
     </dialog>,
-    document.getElementById("modal")
+    document.getElementById("modal"),
   );
   // fetches a <div id="modal"> from index.html (we have put this <div> into <body>), and creates Portal on this <div>
 }
