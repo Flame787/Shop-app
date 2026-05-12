@@ -979,8 +979,9 @@ a:-webkit-any-link:hover {
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  width: 153px;
-  margin: 5px auto 0px;
+  width: 250px;
+  margin: 5px auto 10px;
+  text-align: justify;
 }
 
 .confirm-password-div {
@@ -988,7 +989,7 @@ a:-webkit-any-link:hover {
   flex-wrap: wrap;
   align-items: flex-start;
   justify-content: center;
-  margin-left: 113px;
+  margin-left: 3px;
 }
 
 .confirm-password-div label {
@@ -1153,24 +1154,24 @@ a:-webkit-any-link:hover {
   }
 }
 
-@media (max-width: 740px) {
+/* @media (max-width: 740px) {
   .confirm-password-div {
     margin-left: 15%;
     align-items: start;
   }
-}
+} */
 
-@media (max-width: 666px) {
+/* @media (max-width: 666px) {
   .confirm-password-div {
     margin-left: 10%;
   }
-}
+} */
 
-@media (max-width: 605px) {
+/* @media (max-width: 605px) {
   .confirm-password-div {
     margin-left: 13%;
   }
-}
+} */
 
 @media (max-width: 548px) {
   .categories {
@@ -1201,12 +1202,12 @@ a:-webkit-any-link:hover {
     align-items: start;
     justify-content: center;
   } */
-  .confirm-password-div {
+  /* .confirm-password-div {
     margin-left: 12%;
-  }
+  } */
 }
 
-@media (max-width: 470px) {
+/* @media (max-width: 470px) {
   .confirm-password-div {
     margin-left: 8%;
   }
@@ -1216,7 +1217,7 @@ a:-webkit-any-link:hover {
   .confirm-password-div {
     margin-left: 9%;
   }
-}
+} */
 
 /* mobile resolution: */
 @media (max-width: 380px) {
@@ -1232,13 +1233,13 @@ a:-webkit-any-link:hover {
   .header-top-center-small {
     padding-top: 170px;
   }
-  .confirm-password-div {
+  /* .confirm-password-div {
     margin-left: 7%;
-  }
+  } */
 }
 
-@media (max-width: 344px) {
+/* @media (max-width: 344px) {
   .confirm-password-div {
     margin-left: 5%;
   }
-}
+} */
