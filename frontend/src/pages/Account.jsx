@@ -4,6 +4,7 @@
 import { useSelector } from "react-redux";
 import AccountSection from "../components/LoginAccount/AccountSection";
 import LoginModal from "../components/LoginAccount/LoginModal";
+// import SignupModal from "../components/LoginAccount/SignupModal";
 
 export default function Account() {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn); // this state is received from redux-store

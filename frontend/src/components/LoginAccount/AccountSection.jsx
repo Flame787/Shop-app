@@ -603,15 +603,28 @@ I want to change this, and use industry standard approach for storing the token,
 + when user has logged out, Cart items should be cleared and not stay available in the Cart. Cart items should be related to the user session, and we should decide how long the session lasts. For example, it can last for 7 days and then user has to log in again. 
 We can implement this by setting an expiration time for the HttpOnly cookie that stores the token, and when the cookie expires, the user is automatically logged out and Cart items are cleared.
 + on Account page, add required fields marks (e.g. asterisk *) for fields that are required (e.g. Name and Email), and use red color for font. 
-- handle Sign up form in a similar way (currently, we have only Login form, but we can also create a Signup form, similar to the Account page,where user can enter all their data, and when they submit the form, we send POST request to backend to create new user in DB)
++ handle Sign up form in a similar way (currently, we have only Login form, but we can also create a Signup form, similar to the Account page,where user can enter all their data, and when they submit the form, we send POST request to backend to create new user in DB)
+- email at Loginmodal should not be case-sensitive (currently, if user tries to log in with email that has different case than the one stored in DB, login will fail, but we can change this and make email case-insensitive, so that user can log in even if they enter email with different case)
+- email should be trimmed for whitespace at the beginning and end (currently, if user accidentally adds space at the beginning or end of email, login will fail, but we can trim the email before sending it to backend, so that login will succeed even if user adds extra spaces)
+- apply same logic for Signup form
+- Account form should also trim whitespace for all fields at the beginning and end (only keep whitespace in Full name, address, city)
+- handle Eslint errors / warnings in LoginModal and AccountSection components 
+
 - add the possibility to delete the account (add "Delete account" button, and when user clicks on it, show a confirmation dialog, and if user confirms, send DELETE request to backend to delete the user account from DB, and then log out the user and redirect to Home page)
 - if user has forgotten the password, add the button "Forgot password?" to the Login Form, and when user clicks on it, show a form where they can enter their email address, and when they submit the form, send POST request to backend to generate a password reset token and 
 send it to the user's email address, and then user can use that token to reset their password (this requires implementing additional backend API endpoints for password reset functionality)
- */
+
+
+Handling Orders:
+- add DeliveryData (saves data automaticaaly into Account) and PaymentForm (to enter credit card data), and when user submits the order,  
+ a loader should apply for a few sec - during which frontend sends all this data to backend to create new order in DB, 
+ and then confirmation message appears /modal/Toast-notification?, and then ShowOrder - confirmation page with order details 
+ (this requires implementing additional backend API endpoints for creating orders and saving delivery/payment data)
+*/
 
 
 /* 
-Cart items are now saved using **localStorage** with a 7-day expiration. Here's the complete process flow:
+Cart items are saved using **localStorage** with a 7-day expiration. Here's the complete process flow:
 
 ## How Cart Items Are Saved Now
 
