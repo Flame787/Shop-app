@@ -1,6 +1,4 @@
-// **** JUST REFERENCE ON YTB COURSE ON AUTHENTIFICATION WITH JWT IN REACT, NOT USED IN THIS PROJECT SO FAR
-
-// helper function - acts like backend, but is acctually on frontend: ***
+// helper function - acts like backend, but is acctually on frontend:
 
 import * as jose from "jose";
 
