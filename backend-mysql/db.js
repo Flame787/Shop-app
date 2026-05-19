@@ -1,8 +1,11 @@
 // setting up the server-communication with the database in MySQL
 
 const mysql = require("mysql2/promise");
+
 // require("dotenv").config();
-require("dotenv").config({ path: ".env.local" });
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config({ path: ".env.local" });
+}
 
 console.log("DB_USER:", process.env.DB_USER); // just for testing .env variables
 

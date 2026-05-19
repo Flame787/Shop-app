@@ -1,8 +1,10 @@
 // Express.js-server
 
 // require("dotenv").config();
-require("dotenv").config({ path: ".env.local" });
 
+if (process.env.NODE_ENV !== "production") {
+  require("dotenv").config({ path: ".env.local" });
+}
 
 const express = require("express");
 const bodyParser = require("body-parser");
