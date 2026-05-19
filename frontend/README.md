@@ -71,3 +71,36 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/t
 
 
 
+# APP STRUCTURE:
+
+backend-mysql/middleware/auth.js
+
+backend-mysql/middleware/routes/auth.js
+
+backend-mysql/middleware/routes/categories.js
+
+backend-mysql/middleware/routes/items.js
+
+backend-mysql/db.js
+
+backend-mysql/server.js
+
+frontend/src/components
+
+frontend/src/context-store
+
+frontend/src/redux-store
+
+frontend/src/layouts
+
+frontend/src/pages
+
+frontend/src/util
+
+frontend/src/App.js
+
+frontend/src/App.css
+
+frontend/src/index.js
+
+
