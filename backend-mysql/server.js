@@ -1,6 +1,8 @@
 // Express.js-server
 
-require("dotenv").config();
+// require("dotenv").config();
+require("dotenv").config({ path: ".env.local" });
+
 
 const express = require("express");
 const bodyParser = require("body-parser");
