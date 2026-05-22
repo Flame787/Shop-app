@@ -1,14 +1,18 @@
 const express = require("express");
-const { poolPromise } = require("../db.js");
+// const { poolPromise } = require("../db.js");
+const { prisma } = require("../src/prisma.js");
+ // using Prisma ORM instead of raw SQL queries
+
+// import the authenticateToken middleware to protect certain routes and ensure that only authenticated users can access them:
 const { authenticateToken } = require("../middleware/auth");
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt"); // for hashing passwords
+const jwt = require("jsonwebtoken"); // for creating and verifying JWT tokens
 
-const router = express.Router();
+const router = express.Router(); // create a new router object to define routes related to authentication and user management
 
-const JWT_SECRET = process.env.JWT_SECRET;
+const JWT_SECRET = process.env.JWT_SECRET; // secret key for signing JWT tokens, should be stored in environment variables for security reasons
 
-// 9th API: LOGIN ROUTE - checks email & password that a user sends during login, and returns JWT-token + basic info (id, email, password-hash):
+// 8th API: LOGIN ROUTE - checks email & password that a user sends during login, and returns JWT-token + basic info (id, email, password-hash):
 router.post("/login", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -20,20 +24,36 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const pool = await poolPromise;
-    const [rows] = await pool.query(
-      "SELECT customer_id, email, password_hash, role FROM customers WHERE email = ?",
-      [email],
-    );
+    // const pool = await poolPromise;
+    // const [rows] = await pool.query(
+    //   "SELECT customer_id, email, password_hash, role FROM customers WHERE email = ?",
+    //   [email],
+    // );
 
-    if (rows.length === 0) {
-      return res.status(401).json({
-        success: false,
-        message: "Invalid credentials",
-      });
+    // if (rows.length === 0) {
+    //   return res.status(401).json({
+    //     success: false,
+    //     message: "Invalid credentials",
+    //   });
+    // }
+
+    // const user = rows[0];
+
+    const user = await prisma.customer.findUnique({
+      where: { email },
+      select: {
+        customer_id: true,
+        email: true,
+        password_hash: true,
+        role: true,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(401)
+        .json({ success: false, message: "Invalid credentials" });
     }
-
-    const user = rows[0];
 
     const isPasswordValid = await bcrypt.compare(password, user.password_hash);
 
@@ -84,7 +104,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-// 9.5th API: SIGNUP ROUTE - creates a new user account
+// 9th API: SIGNUP ROUTE - creates a new user account
 router.post("/signup", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -106,23 +126,37 @@ router.post("/signup", async (req, res) => {
     }
 
     // Password strength validation (at least 8 characters, one uppercase, one lowercase, one number)
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d@$!%*?&]{8,}$/;
     if (!passwordRegex.test(password)) {
       return res.status(400).json({
         success: false,
-        message: "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
+        message:
+          "Password must be at least 8 characters long and contain at least one uppercase letter, one lowercase letter, and one number.",
       });
     }
 
-    const pool = await poolPromise;
+    // const pool = await poolPromise;
 
     // Check if user already exists
-    const [existingUser] = await pool.query(
-      "SELECT customer_id FROM customers WHERE email = ?",
-      [email],
-    );
+    // const [existingUser] = await pool.query(
+    //   "SELECT customer_id FROM customers WHERE email = ?",
+    //   [email],
+    // );
 
-    if (existingUser.length > 0) {
+    // if (existingUser.length > 0) {
+    //   return res.status(409).json({
+    //     success: false,
+    //     message: "User with this email already exists",
+    //   });
+    // }
+
+    const existingUser = await prisma.customer.findUnique({
+      where: { email },
+      select: { customer_id: true },
+    });
+
+    if (existingUser) {
       return res.status(409).json({
         success: false,
         message: "User with this email already exists",
@@ -133,25 +167,47 @@ router.post("/signup", async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Insert new user
-    const [result] = await pool.query(
-      "INSERT INTO customers (email, password_hash, role, date_registered, name) VALUES (?, ?, 'user', NOW(), '')",
-      [email, hashedPassword],
-    );
+    // const [result] = await pool.query(
+    //   "INSERT INTO customers (email, password_hash, role, date_registered, name) VALUES (?, ?, 'user', NOW(), '')",
+    //   [email, hashedPassword],
+    // );
 
-    const userId = result.insertId;
+    // const userId = result.insertId;
+
+    const newUser = await prisma.customer.create({
+      data: {
+        email,
+        password_hash: hashedPassword,
+        role: "user",
+        date_registered: new Date(),
+        name: "",
+      },
+    });
 
     // Generate tokens
+    // const accessToken = jwt.sign(
+    //   {
+    //     sub: userId,
+    //     role: 'user',
+    //   },
+    //   JWT_SECRET,
+    //   { expiresIn: "15m" },
+    // );
+
     const accessToken = jwt.sign(
-      {
-        sub: userId,
-        role: 'user',
-      },
+      { sub: newUser.customer_id, role: "user" },
       JWT_SECRET,
       { expiresIn: "15m" },
     );
 
+    // const refreshToken = jwt.sign(
+    //   { sub: userId, role: 'user' },
+    //   JWT_SECRET,
+    //   { expiresIn: "7d" },
+    // );
+
     const refreshToken = jwt.sign(
-      { sub: userId, role: 'user' },
+      { sub: newUser.customer_id, role: "user" },
       JWT_SECRET,
       { expiresIn: "7d" },
     );
@@ -163,19 +219,37 @@ router.post("/signup", async (req, res) => {
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
+    // res.status(201).json({
+    //   success: true,
+    //   accessToken,
+    //   user: {
+    //     id: userId,
+    //     email: email,
+    //     role: 'user',
+    //   },
+    // });
+
     res.status(201).json({
       success: true,
       accessToken,
       user: {
-        id: userId,
-        email: email,
-        role: 'user',
+        id: newUser.customer_id,
+        email: newUser.email,
+        role: "user",
       },
     });
+
+    // } catch (error) {
+    //   console.error("Signup error:", error);
+    //   console.error("Signup error message:", error.message);
+    //   console.error("Signup error stack:", error.stack);
+    //   res.status(500).json({
+    //     success: false,
+    //     message: `Server error: ${error.message}`,
+    //   });
+    // }
   } catch (error) {
     console.error("Signup error:", error);
-    console.error("Signup error message:", error.message);
-    console.error("Signup error stack:", error.stack);
     res.status(500).json({
       success: false,
       message: `Server error: ${error.message}`,
@@ -188,21 +262,43 @@ router.get("/me", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.sub;
 
-    const pool = await poolPromise;
-    const [rows] = await pool.query(
-      "SELECT customer_id, name, email, role, date_registered, phone, street, city, postal_code, country FROM customers WHERE customer_id = ?",
-      [userId],
-    );
-    // added all fields to the SELECT query, to show all user data on the Account page (when user is logged in)
+    // const pool = await poolPromise;
+    // const [rows] = await pool.query(
+    //   "SELECT customer_id, name, email, role, date_registered, phone, street, city, postal_code, country FROM customers WHERE customer_id = ?",
+    //   [userId],
+    // );
+    // // added all fields to the SELECT query, to show all user data on the Account page (when user is logged in)
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
+    // if (rows.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "User not found",
+    //   });
+    // }
+
+    // const user = rows[0];
+
+    const user = await prisma.customer.findUnique({
+      where: { customer_id: userId },
+      select: {
+        customer_id: true,
+        name: true,
+        email: true,
+        role: true,
+        date_registered: true,
+        phone: true,
+        street: true,
+        city: true,
+        postal_code: true,
+        country: true,
+      },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found" });
     }
-
-    const user = rows[0];
 
     res.status(200).json({
       success: true,
@@ -221,7 +317,13 @@ router.get("/me", authenticateToken, async (req, res) => {
 router.put("/me", authenticateToken, async (req, res) => {
   try {
     const userId = req.user.sub;
-    const {
+
+    const { name, email, phone, street, city, postal_code, country, password } =
+      req.body;
+
+    // const pool = await poolPromise;
+
+    const updateData = {
       name,
       email,
       phone,
@@ -229,23 +331,34 @@ router.put("/me", authenticateToken, async (req, res) => {
       city,
       postal_code,
       country,
-      password,
-    } = req.body;
-
-    const pool = await poolPromise;
+    };
 
     if (password) {
-      const hashedPassword = await bcrypt.hash(password, 10);
-      await pool.query(
-        "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ?, password_hash = ? WHERE customer_id = ?",
-        [name, email, phone, street, city, postal_code, country, hashedPassword, userId],
-      );
-    } else {
-      await pool.query(
-        "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ? WHERE customer_id = ?",
-        [name, email, phone, street, city, postal_code, country, userId],
-      );
+      updateData.password_hash = await bcrypt.hash(password, 10);
     }
+
+    // if (password) {
+    //   const hashedPassword = await bcrypt.hash(password, 10);
+    //   await pool.query(
+    //     "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ?, password_hash = ? WHERE customer_id = ?",
+    //     [
+    //       name,
+    //       email,
+    //       phone,
+    //       street,
+    //       city,
+    //       postal_code,
+    //       country,
+    //       hashedPassword,
+    //       userId,
+    //     ],
+    //   );
+    // } else {
+    //   await pool.query(
+    //     "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ? WHERE customer_id = ?",
+    //     [name, email, phone, street, city, postal_code, country, userId],
+    //   );
+    // }
     // we update all fields that user can edit on the Account page (name, email, phone, street, city, postal_code, country, password)
 
     const [rows] = await pool.query(
@@ -253,17 +366,40 @@ router.put("/me", authenticateToken, async (req, res) => {
       [userId],
     );
 
-    if (rows.length === 0) {
-      return res.status(404).json({
-        success: false,
-        message: "User not found",
-      });
-    }
+    // if (rows.length === 0) {
+    //   return res.status(404).json({
+    //     success: false,
+    //     message: "User not found",
+    //   });
+    // }
 
-    res.status(200).json({
-      success: true,
-      data: rows[0],
+    // res.status(200).json({
+    //   success: true,
+    //   data: rows[0],
+    // });
+
+    await prisma.customer.update({
+      where: { customer_id: userId },
+      data: updateData,
     });
+
+    const updatedUser = await prisma.customer.findUnique({
+      where: { customer_id: userId },
+      select: {
+        customer_id: true,
+        name: true,
+        email: true,
+        role: true,
+        date_registered: true,
+        phone: true,
+        street: true,
+        city: true,
+        postal_code: true,
+        country: true,
+      },
+    });
+
+    res.status(200).json({ success: true, data: updatedUser });
   } catch (error) {
     console.error("Error in PUT /api/me:", error);
     res.status(500).json({
@@ -285,37 +421,66 @@ router.post("/register", async (req, res) => {
       });
     }
 
-    const pool = await poolPromise;
+    // const pool = await poolPromise;
 
-    const [existing] = await pool.query(
-      "SELECT customer_id FROM customers WHERE email = ?",
-      [email],
-    );
-    if (existing.length > 0) {
-      return res
-        .status(409)
-        .json({ success: false, message: "Email already exists" });
+    // const [existing] = await pool.query(
+    //   "SELECT customer_id FROM customers WHERE email = ?",
+    //   [email],
+    // );
+    // if (existing.length > 0) {
+    //   return res
+    //     .status(409)
+    //     .json({ success: false, message: "Email already exists" });
+    // }
+
+    const existing = await prisma.customer.findUnique({
+      where: { email },
+      select: { customer_id: true },
+    });
+
+    if (existing) {
+      return res.status(409).json({
+        success: false,
+        message: "Email already exists",
+      });
     }
 
     const password_hash = await bcrypt.hash(password, 10);
 
-    const [result] = await pool.query(
-      "INSERT INTO customers (name, email, password_hash, role, date_registered) VALUES (?, ?, ?, ?, NOW())",
-      [name, email, password_hash, role || "user"],
-    );
+    // const [result] = await pool.query(
+    //   "INSERT INTO customers (name, email, password_hash, role, date_registered) VALUES (?, ?, ?, ?, NOW())",
+    //   [name, email, password_hash, role || "user"],
+    // );
+
+    // res.status(201).json({
+    //   success: true,
+    //   message: "User registered",
+    //   userId: result.insertId,
+    // });
+
+    const newUser = await prisma.customer.create({
+      data: {
+        name,
+        email,
+        password_hash,
+        role: role || "user",
+        date_registered: new Date(),
+      },
+    });
 
     res.status(201).json({
       success: true,
       message: "User registered",
-      userId: result.insertId,
+      userId: newUser.customer_id,
     });
+
   } catch (error) {
     console.error("Registration error:", error);
     res.status(500).json({ success: false, message: "Server error" });
   }
 });
 
-// 12th API: POST - return new ACCESS-TOKEN, if REFRESH-TOKEN is valid:
+// 13th API: POST - return new ACCESS-TOKEN, if REFRESH-TOKEN is valid:
 router.post("/refresh", async (req, res) => {
   try {
     const { refreshToken } = req.cookies;
@@ -340,7 +505,7 @@ router.post("/refresh", async (req, res) => {
   }
 });
 
-// Cart API: GET saved cart for the logged-in user
+// 14th API: Cart API: GET saved cart for the logged-in user
 router.get("/cart", authenticateToken, (req, res) => {
   try {
     const cartCookie = req.cookies.cart;
@@ -357,14 +522,16 @@ router.get("/cart", authenticateToken, (req, res) => {
       return res.status(200).json({ success: true, cart: { items: [] } });
     }
 
-    res.status(200).json({ success: true, cart: { items: cartData.items || [] } });
+    res
+      .status(200)
+      .json({ success: true, cart: { items: cartData.items || [] } });
   } catch (error) {
     console.error("Error reading cart cookie:", error);
     res.status(500).json({ success: false, message: "Unable to read cart" });
   }
 });
 
-// Cart API: SAVE cart for the logged-in user in httpOnly cookie
+// 15th API: Cart API: SAVE cart for the logged-in user in httpOnly cookie
 router.post("/cart", authenticateToken, (req, res) => {
   try {
     const { items } = req.body;
@@ -387,7 +554,7 @@ router.post("/cart", authenticateToken, (req, res) => {
   }
 });
 
-// Cart API: clear stored cart for the logged-in user
+// 16th API: Cart API: clear stored cart for the logged-in user
 router.delete("/cart", authenticateToken, (req, res) => {
   res.clearCookie("cart", {
     httpOnly: true,
@@ -398,7 +565,7 @@ router.delete("/cart", authenticateToken, (req, res) => {
   res.status(200).json({ success: true, message: "Cart cleared" });
 });
 
-// 13th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
+// 17th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
 router.post("/logout", (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
