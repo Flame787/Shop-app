@@ -593,6 +593,15 @@ WHERE customer_id = 1;
 // jimmy@test.com
 // current password: test1234
 
+// AFTER MIGRATION TO NEW DATABASE:
+
+// test@justtest.com
+// Justtest123
+
+// after killing additional servers in the background - new account:
+// john@next.com
+// John1234
+
 /* Next steps:
 + instead of current browser alert pop-up when user info is successfully updated, implement Toast notification (a small message that appears at the bottom of the screen and disappears after a few seconds) to show success or error messages when user tries to save changes on the Account page
 + add alerts if user tries to enter invalid data (e.g. invalid email format, or postal code that contains letters instead of numbers, etc.)
@@ -604,6 +613,8 @@ I want to change this, and use industry standard approach for storing the token,
 We can implement this by setting an expiration time for the HttpOnly cookie that stores the token, and when the cookie expires, the user is automatically logged out and Cart items are cleared.
 + on Account page, add required fields marks (e.g. asterisk *) for fields that are required (e.g. Name and Email), and use red color for font. 
 + handle Sign up form in a similar way (currently, we have only Login form, but we can also create a Signup form, similar to the Account page,where user can enter all their data, and when they submit the form, we send POST request to backend to create new user in DB)
+
+- Sign up = Create new account. Sign in = Log in. 
 - have both Login and Signup in header - check if already applies
 - email at Loginmodal should not be case-sensitive (currently, if user tries to log in with email that has different case than the one stored in DB, login will fail, but we can change this and make email case-insensitive, so that user can log in even if they enter email with different case)
 - email should be trimmed for whitespace at the beginning and end (currently, if user accidentally adds space at the beginning or end of email, login will fail, but we can trim the email before sending it to backend, so that login will succeed even if user adds extra spaces)

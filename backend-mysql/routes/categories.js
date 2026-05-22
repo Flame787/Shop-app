@@ -1,19 +1,46 @@
 const express = require("express");
-const { poolPromise } = require("../db.js");
+// const { poolPromise } = require("../db.js");
+const { prisma } = require("../src/prisma.js");
+
 
 const router = express.Router();
 
 // 7th API: GET - get all categories names (for category buttons)
 router.get("/", async (req, res) => {
+
+  // Using raw SQL queries with mysql2:
+
+  // try {
+  //   const pool = await poolPromise;
+  //   const [rows] = await pool.query(
+  //     "SELECT category_id, category_name FROM categories",
+  //   );
+
+  //   res.status(200).json({
+  //     success: true,
+  //     data: rows,
+  //   });
+  // } catch (error) {
+  //   console.error("Error fetching categories:", error);
+  //   res.status(500).json({
+  //     success: false,
+  //     message: "Server error, try again",
+  //     error: error.message,
+  //   });
+  // }
+
+  // Using Prisma ORM instead of raw SQL queries:
   try {
-    const pool = await poolPromise;
-    const [rows] = await pool.query(
-      "SELECT category_id, category_name FROM categories",
-    );
+    const categories = await prisma.category.findMany({
+      select: {
+        category_id: true,
+        category_name: true,
+      },
+    });
 
     res.status(200).json({
       success: true,
-      data: rows,
+      data: categories,
     });
   } catch (error) {
     console.error("Error fetching categories:", error);

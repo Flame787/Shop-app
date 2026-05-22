@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+
+enum Role {
+  user
+  admin
+}
+
+enum OrderStatus {
+  ordered
+  shipped
+  delivered
+  cancelled
+}
+
+
+model Category {
+  category_id   Int      @id @default(autoincrement())
+  category_name String
+  sort_order    Int?
+
+  items         Item[]
+}
+
+model Customer {
+  customer_id     Int       @id @default(autoincrement())
+  name            String?
+  email           String    @unique
+  phone           String?
+  street          String?
+  city            String?
+  postal_code     String?
+  country         String?
+  date_registered DateTime  @default(now())
+  password_hash   String
+  role            Role      @default(user)
+
+  orders          Order[]
+}
+
+model Item {
+  item_id           Int       @id @default(autoincrement())
+  name              String
+  description       String?
+  price             Decimal
+  discount_price    Decimal?
+  quantity_in_stock Int
+  picture_url       String?
+  category_id       Int?
+  tags              String?
+  date_added        DateTime  @default(now())
+  last_updated      DateTime  @updatedAt
+  is_active         Boolean?
+
+  category          Category? @relation(fields: [category_id], references: [category_id])
+  order_items       OrderItem[]
+}
+
+model Order {
+  order_id       Int          @id @default(autoincrement())
+  customer_id    Int
+  order_status   OrderStatus  @default(ordered)
+  date_ordered   DateTime     @default(now())
+  date_shipped   DateTime?
+  date_delivered DateTime?
+  total_price    Decimal
+
+  customer       Customer     @relation(fields: [customer_id], references: [customer_id])
+  order_items    OrderItem[]
+}
+
+model OrderItem {
+  order_item_id    Int      @id @default(autoincrement())
+  order_id         Int
+  item_id          Int
+  quantity_ordered Int
+  price_at_order   Decimal
+
+  order            Order    @relation(fields: [order_id], references: [order_id])
+  item             Item     @relation(fields: [item_id], references: [item_id])
+}
+
