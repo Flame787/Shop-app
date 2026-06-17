@@ -118,7 +118,8 @@ export default function LoginModal() {
 // tinaTurner@test.com 
 // 123456abcA
 
-
+// doris.dragovic@gmail.com
+// Doris123
 
 /* 
 - Password validation enforcing 8+ characters with uppercase, lowercase, and number
