@@ -1,4 +1,4 @@
-import { createContext, useReducer, useState, useEffect } from "react";
+import { createContext, useReducer, useState, useEffect, useRef } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "../util/axiosConfig";
 
@@ -15,20 +15,15 @@ const saveCartToLocalStorage = (items) => {
 const loadCartFromLocalStorage = () => {
   try {
     const stored = localStorage.getItem(CART_STORAGE_KEY);
-    if (!stored) {
-      return { items: [] };
-    }
+    if (!stored) return { items: [] };
     const parsed = JSON.parse(stored);
-    return {
-      items: Array.isArray(parsed.items) ? parsed.items : [],
-    };
+    return { items: Array.isArray(parsed.items) ? parsed.items : [] };
   } catch (error) {
     console.error("Error loading cart from localStorage:", error);
     return { items: [] };
   }
 };
 
-// state managed in context - object with attributes: items, addItem, removeItem:
 const CartContext = createContext({
   items: [],
   addItem: (item) => {},
@@ -37,65 +32,43 @@ const CartContext = createContext({
 
 function cartReducer(state, action) {
   if (action.type === "ADD_ITEM") {
-    // update the state, to add a product to the cart
-    // state.items.push(action.item) - not ok, never mutate the existing state!
     const existingCartItemIndex = state.items.findIndex(
-      // findIndex() returns -1 if it doesn't find a value, otherwise: > -1 = item already exists in [items]-array
       (item) => item.id === action.item.id
     );
-    // creating new Array, and new array-object in memory
     const updatedItems = [...state.items];
 
     if (existingCartItemIndex > -1) {
-      // new variable, to shorten the code:
       const existingItem = state.items[existingCartItemIndex];
-      // taking all properties of an existing item, spreading them into this new object, & adding +1 to quantity-property:
       const updatedItem = {
         ...existingItem,
-        // quantity: existingItem.quantity + 1,
         quantity: existingItem.quantity + action.item.quantity,
       };
-      // overwriting existing item with the updatedItem (if quantity has changed):
       updatedItems[existingCartItemIndex] = updatedItem;
     } else {
-      // if not > -1, item doesn't exist in array, and should be added (push). Also adding quantity-property & setting it to 1:
-      // updatedItems.push({ ...action.item, quantity: 1 });
       updatedItems.push({ ...action.item, quantity: action.item.quantity });
     }
-    // returning new object - keeping parts that didn't change, and overwriting items with updatedItems:
     return { ...state, items: updatedItems };
   }
 
   if (action.type === "REMOVE_ITEM") {
-    // remove a product from the state
     const existingCartItemIndex = state.items.findIndex(
-      // findIndex() returns -1 if it doesn't find a value, otherwise: > -1 = item already exists in [items]-array
       (item) => item.id === action.id
-      // here action.id is the id of the item to be removed (sent as payload); we don't need the entire item object, just the id
     );
     const existingCartItem = state.items[existingCartItemIndex];
-
     const updatedItems = [...state.items];
 
-    // if quantity of product in the cart is 1, on REMOVE we want to remove the entire item from the cart:
     if (existingCartItem.quantity === 1) {
-      // method that removes a number of items from array (here it removes only 1 item):
       updatedItems.splice(existingCartItemIndex, 1);
     } else {
-      // if the quantity of item in the cart is bigger than 1, we want to just remove -1, update that quantity, but leave the item in the cart,
-      // we are creating a new item (a copy), based on old item, with reduced quantity:
       const updatedItem = {
         ...existingCartItem,
         quantity: existingCartItem.quantity - 1,
       };
-      // overwriting existing item with the updatedItem (if quantity has changed):
       updatedItems[existingCartItemIndex] = updatedItem;
     }
-    // returning new object - keeping parts that didn't change, and overwriting items with updatedItems:
     return { ...state, items: updatedItems };
   }
 
-  // function for updating item quantity in the Cart:
   if (action.type === "UPDATE_ITEM_QUANTITY") {
     const updatedItems = state.items.map((item) =>
       item.id === action.id ? { ...item, quantity: action.quantity } : item
@@ -103,7 +76,6 @@ function cartReducer(state, action) {
     return { ...state, items: updatedItems };
   }
 
-  // function for deleting entirely a product from the Cart with Remove-button:
   if (action.type === "DELETE_ITEM") {
     const updatedItems = state.items.filter((item) => item.id !== action.id);
     return { ...state, items: updatedItems };
@@ -125,6 +97,11 @@ export function CartContextProvider({ children }) {
   const [isCartLoaded, setIsCartLoaded] = useState(false);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
+  // Tracks whether user was previously logged in, to distinguish
+  // "initial mount (auth not yet checked)" from "actual logout"
+  const wasLoggedIn = useRef(false);
+
+  // On initial mount: load localStorage cart for guests
   useEffect(() => {
     const localCart = loadCartFromLocalStorage();
     if (Array.isArray(localCart.items) && localCart.items.length > 0) {
@@ -132,31 +109,35 @@ export function CartContextProvider({ children }) {
     }
   }, []);
 
+  // Save cart on every change:
+  // - guests: save to localStorage
+  // - logged-in users: save to DB (only after cart has been loaded from DB)
   useEffect(() => {
-    saveCartToLocalStorage(cart.items);
-  }, [cart.items]);
-
-  useEffect(() => {
-    if (!isLoggedIn || !isCartLoaded) {
-      return;
-    }
-
-    const saveCart = async () => {
-      try {
-        await axiosInstance.post("/api/cart", { items: cart.items });
-      } catch (error) {
+    if (isLoggedIn) {
+      if (!isCartLoaded) return;
+      axiosInstance.post("/api/cart", { items: cart.items }).catch((error) => {
         console.error("Error saving cart:", error);
-      }
-    };
-
-    saveCart();
+      });
+    } else {
+      saveCartToLocalStorage(cart.items);
+    }
   }, [cart.items, isLoggedIn, isCartLoaded]);
 
+  // Handle login and logout
   useEffect(() => {
     if (!isLoggedIn) {
+      if (wasLoggedIn.current) {
+        // Actual logout: clear cart state and localStorage so another
+        // user/guest starting fresh won't see the previous user's items
+        dispatchCartAction({ type: "CLEAR_CART" });
+        localStorage.removeItem(CART_STORAGE_KEY);
+      }
+      wasLoggedIn.current = false;
       setIsCartLoaded(false);
       return;
     }
+
+    wasLoggedIn.current = true;
 
     const fetchCart = async () => {
       try {
@@ -164,8 +145,12 @@ export function CartContextProvider({ children }) {
         const savedCart = response.data.cart;
 
         if (savedCart && Array.isArray(savedCart.items) && savedCart.items.length > 0) {
+          // DB has items for this user: use them, discard any localStorage guest cart
           dispatchCartAction({ type: "SET_CART", items: savedCart.items });
+          localStorage.removeItem(CART_STORAGE_KEY);
         } else {
+          // DB cart is empty (new user or user cleared their cart):
+          // migrate guest localStorage cart to DB, then clear localStorage
           const localCart = loadCartFromLocalStorage();
           if (Array.isArray(localCart.items) && localCart.items.length > 0) {
             dispatchCartAction({ type: "SET_CART", items: localCart.items });
@@ -175,13 +160,10 @@ export function CartContextProvider({ children }) {
               console.error("Error syncing local cart to server:", error);
             }
           }
+          localStorage.removeItem(CART_STORAGE_KEY);
         }
       } catch (error) {
         console.error("Error loading cart:", error);
-        const localCart = loadCartFromLocalStorage();
-        if (Array.isArray(localCart.items) && localCart.items.length > 0) {
-          dispatchCartAction({ type: "SET_CART", items: localCart.items });
-        }
       } finally {
         setIsCartLoaded(true);
       }
@@ -192,40 +174,33 @@ export function CartContextProvider({ children }) {
 
   function addItem(item) {
     dispatchCartAction({ type: "ADD_ITEM", item: item });
-    // calling the dispatch-function, passing an action-object with action-type and item as payload
   }
 
   function removeItem(id) {
     dispatchCartAction({ type: "REMOVE_ITEM", id: id });
-    // calling the dispatch-function, passing an action-object with action-type and id as payload
   }
 
-  // function for updating item quantity in the Cart:
   function updateItemQuantity(id, quantity) {
     dispatchCartAction({ type: "UPDATE_ITEM_QUANTITY", id, quantity });
   }
 
-  // function for deleting entirely a product from the Cart with Remove-button:
   function deleteItem(id) {
     dispatchCartAction({ type: "DELETE_ITEM", id });
   }
 
   function clearCart() {
     dispatchCartAction({ type: "CLEAR_CART" });
-    localStorage.removeItem("cart");
+    localStorage.removeItem(CART_STORAGE_KEY);
   }
 
-  // passing the state to CartContextProvider (so other components can access it via useContext-hook):
   const cartContext = {
     items: cart.items,
-    addItem: addItem,
-    removeItem: removeItem,
+    addItem,
+    removeItem,
     updateItemQuantity,
     deleteItem,
     clearCart,
   };
-
-  console.log("cartContext:", cartContext);
 
   return (
     <CartContext.Provider value={cartContext}>{children}</CartContext.Provider>
