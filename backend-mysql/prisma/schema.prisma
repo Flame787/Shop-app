@@ -48,6 +48,7 @@ model Customer {
   date_registered DateTime  @default(now())
   password_hash   String
   role            Role      @default(user)
+  cart_items      Json?
 
   orders          Order[]
 

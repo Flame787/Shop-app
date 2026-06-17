@@ -468,68 +468,56 @@ router.post("/refresh", async (req, res) => {
 });
 
 // 14th API: Cart API: GET saved cart for the logged-in user
-router.get("/cart", authenticateToken, (req, res) => {
+router.get("/cart", authenticateToken, async (req, res) => {
   try {
-    const cartCookie = req.cookies.cart;
-    const cartData = cartCookie ? JSON.parse(cartCookie) : null;
+    const userId = req.user.sub;
+    const user = await prisma.customer.findUnique({
+      where: { customer_id: userId },
+      select: { cart_items: true },
+    });
 
-    const currentUserId = String(req.user.sub);
+    const items = Array.isArray(user?.cart_items) ? user.cart_items : [];
 
-    if (!cartData || String(cartData.userId) !== currentUserId) {
-      if (cartData && String(cartData.userId) !== currentUserId) {
-        res.clearCookie("cart", {
-          httpOnly: true,
-          secure: process.env.NODE_ENV === "production",
-          sameSite: "none",
-          path: "/",
-        });
-      }
-      return res.status(200).json({ success: true, cart: { items: [] } });
-    }
-
-    res
-      .status(200)
-      .json({ success: true, cart: { items: cartData.items || [] } });
+    res.status(200).json({ success: true, cart: { items } });
   } catch (error) {
-    console.error("Error reading cart cookie:", error);
+    console.error("Error reading cart from DB:", error);
     res.status(500).json({ success: false, message: "Unable to read cart" });
   }
 });
 
-// 15th API: Cart API: SAVE cart for the logged-in user in httpOnly cookie
-router.post("/cart", authenticateToken, (req, res) => {
+// 15th API: Cart API: SAVE cart for the logged-in user in the database
+router.post("/cart", authenticateToken, async (req, res) => {
   try {
+    const userId = req.user.sub;
     const { items } = req.body;
-    const cart = {
-      userId: String(req.user.sub),
-      items: Array.isArray(items) ? items : [],
-    };
+    const savedItems = Array.isArray(items) ? items : [];
 
-    res.cookie("cart", JSON.stringify(cart), {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
-      path: "/",
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+    await prisma.customer.update({
+      where: { customer_id: userId },
+      data: { cart_items: savedItems },
     });
 
-    res.status(200).json({ success: true, cart });
+    res.status(200).json({ success: true, cart: { items: savedItems } });
   } catch (error) {
-    console.error("Error saving cart cookie:", error);
+    console.error("Error saving cart to DB:", error);
     res.status(500).json({ success: false, message: "Unable to save cart" });
   }
 });
 
 // 16th API: Cart API: clear stored cart for the logged-in user
-router.delete("/cart", authenticateToken, (req, res) => {
-  res.clearCookie("cart", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-    path: "/",
-  });
+router.delete("/cart", authenticateToken, async (req, res) => {
+  try {
+    const userId = req.user.sub;
+    await prisma.customer.update({
+      where: { customer_id: userId },
+      data: { cart_items: [] },
+    });
 
-  res.status(200).json({ success: true, message: "Cart cleared" });
+    res.status(200).json({ success: true, message: "Cart cleared" });
+  } catch (error) {
+    console.error("Error clearing cart in DB:", error);
+    res.status(500).json({ success: false, message: "Unable to clear cart" });
+  }
 });
 
 // 17th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
