@@ -5,7 +5,6 @@ import axiosInstance from "../../util/axiosConfig";
 import { toast } from "react-toastify";
 
 export default function AccountSection() {
-  const user = useSelector((state) => state.auth.user);
   const token = useSelector((state) => state.auth.token);
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
   const PASSWORD_PLACEHOLDER = "************";
@@ -135,7 +134,7 @@ export default function AccountSection() {
     }
 
     // Phone validation (optional: allow numbers, spaces, +, -, () only if filled)
-    if (userData.phone && !/^[\d\s\+\-\(\)]+$/.test(userData.phone)) {
+    if (userData.phone && !/^[\d\s+\-()]+$/.test(userData.phone)) {
       errors.push("Phone number can only contain numbers, spaces, and symbols (+, -, (, )).");
     }
     // Password validation (optional when editing)

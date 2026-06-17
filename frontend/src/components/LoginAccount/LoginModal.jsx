@@ -2,7 +2,6 @@ import { useState } from "react";
 import { useDispatch } from "react-redux";
 import { login, closeModal } from "../../redux-store/authSlice";
 import Modal from "../reusable/Modal";
-import { NavLink } from "react-router-dom";
 import axiosInstance from "../../util/axiosConfig";
 
 export default function LoginModal() {
