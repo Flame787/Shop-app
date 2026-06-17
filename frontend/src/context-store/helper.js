@@ -1,18 +1,15 @@
-// helper function - acts like backend, but is acctually on frontend:
-
-import * as jose from "jose";
-
-import { env } from "@/lib/env";
+// helper functions used by frontend. JWT signing/verification must happen on the server.
 import { getItem } from "@/lib/utils/localStorage";
 
-const JWT_SECRET_KEY = "blablabla";
-const jwtSecret = new TextEncoder().encode(JWT_SECRET_KEY);
+// feature flags / keys from env (fallbacks for local dev)
+const USE_AUTH = process.env.REACT_APP_USE_AUTH !== "false";
+const DB_KEY = process.env.REACT_APP_DB_KEY || "shop_prisma";
 
 // waits for a given number of miliseconds
 export const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 //  helper function to easily retrieve a database table:
-export const getDatabaseTable = (entity) => getItem(env.DB_KEY)?.[entity];
+export const getDatabaseTable = (entity) => getItem(DB_KEY)?.[entity];
 
 // Wrapper for axios mock adapter that adds authentication checks
 export const withAuth =
@@ -20,11 +17,11 @@ export const withAuth =
   async (config) => {
     const token = config.headers.Authorization?.split(" ")[1];
 
-    // verifies access token if present
+    // verifies access token if present (delegates verification to backend)
     const verified = token ? await verifyToken(token) : false;
 
     // returns 403 if token is invalid and auth is enabled:
-    if (env.USE_AUTH && !verified) {
+    if (USE_AUTH && !verified) {
       return [403, { message: "Unauthorized" }];
     }
 
@@ -35,19 +32,18 @@ export const withAuth =
 // verifies a JWT token:
 export const verifyToken = async (token, options = undefined) => {
   try {
-    const verification = await jose.jwtVerify(token, jwtSecret);
-    return options?.returnPayload ? verification.payload : true;     // payload = info about specific user, if existing
-  } catch {
+    const base = process.env.REACT_APP_API_URL || "";
+    const res = await fetch(`${base}/api/me`, {
+      method: "GET",
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "include",
+    });
+    if (!res.ok) return false;
+    const body = await res.json();
+    return options?.returnPayload ? body.data : true;
+  } catch (e) {
     return false;
   }
 };
 
-// generates a refresh-token with a 30 day expiration:
-export const generateRefreshToken = async (data) => {
-  return await new jose.SignJWT({ data })
-    .setProtectedHeader({ alg: "HS256" })
-    .setExpirationTime("30d")
-    .sign(jwtSecret);
-};
-
-// this should acctually be done on server, not on frontend
+// Do not generate tokens on the frontend. Token creation/refreshing is handled by the backend endpoints (/api/login, /api/refresh).
