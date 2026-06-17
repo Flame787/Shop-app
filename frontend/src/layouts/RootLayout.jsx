@@ -1,4 +1,3 @@
-import axios from "axios";
 import axiosInstance from "../util/axiosConfig";
 import { useQuery } from "@tanstack/react-query";
 import { useLocation } from "react-router-dom";
