@@ -32,6 +32,8 @@ model Category {
   sort_order    Int?
 
   items         Item[]
+
+  @@map("category")
 }
 
 model Customer {
@@ -48,6 +50,8 @@ model Customer {
   role            Role      @default(user)
 
   orders          Order[]
+
+  @@map("customer")
 }
 
 model Item {
@@ -66,6 +70,8 @@ model Item {
 
   category          Category? @relation(fields: [category_id], references: [category_id])
   order_items       OrderItem[]
+
+  @@map("item")
 }
 
 model Order {
@@ -79,6 +85,8 @@ model Order {
 
   customer       Customer     @relation(fields: [customer_id], references: [customer_id])
   order_items    OrderItem[]
+
+  @@map("order")
 }
 
 model OrderItem {
@@ -90,5 +98,7 @@ model OrderItem {
 
   order            Order    @relation(fields: [order_id], references: [order_id])
   item             Item     @relation(fields: [item_id], references: [item_id])
+
+  @@map("orderitem")
 }
 
