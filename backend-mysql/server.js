@@ -1,23 +1,10 @@
 // Express.js-server
 
-// require("dotenv").config();
-
-import rateLimit from "express-rate-limit"; 
-// for security - to limit the number of requests to the backend (e.g. to prevent brute-force attacks on login endpoint)
-
-const limiter = rateLimit({
-  windowMs: 60 * 1000, // 1 minute
-  max: 100,            // max 100 requests per IP
-  standardHeaders: true,
-  legacyHeaders: false,
-});
-
-app.use(limiter);
-
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config({ path: ".env.local" });
 }
 
+const rateLimit = require("express-rate-limit");
 const express = require("express");
 const bodyParser = require("body-parser");
 const cors = require("cors");
@@ -28,6 +15,16 @@ const authRouter = require("./routes/auth");
 const categoriesRouter = require("./routes/categories");
 
 const app = express();
+
+// for security - to limit the number of requests to the backend (e.g. to prevent brute-force attacks on login endpoint)
+const limiter = rateLimit({
+  windowMs: 60 * 1000, // 1 minute
+  max: 100,            // max 100 requests per IP
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use(limiter);
 app.use(bodyParser.json());  
 // this is needed to parse JSON bodies in requests, but now not needed, because we use express.json() instead of bodyParser.json() - express has built-in body parsing since version 4.16.0
 app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
