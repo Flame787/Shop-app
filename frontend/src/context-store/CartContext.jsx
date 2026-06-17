@@ -2,6 +2,32 @@ import { createContext, useReducer, useState, useEffect } from "react";
 import { useSelector } from "react-redux";
 import axiosInstance from "../util/axiosConfig";
 
+const CART_STORAGE_KEY = "shop_cart";
+
+const saveCartToLocalStorage = (items) => {
+  try {
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify({ items }));
+  } catch (error) {
+    console.error("Error saving cart to localStorage:", error);
+  }
+};
+
+const loadCartFromLocalStorage = () => {
+  try {
+    const stored = localStorage.getItem(CART_STORAGE_KEY);
+    if (!stored) {
+      return { items: [] };
+    }
+    const parsed = JSON.parse(stored);
+    return {
+      items: Array.isArray(parsed.items) ? parsed.items : [],
+    };
+  } catch (error) {
+    console.error("Error loading cart from localStorage:", error);
+    return { items: [] };
+  }
+};
+
 // state managed in context - object with attributes: items, addItem, removeItem:
 const CartContext = createContext({
   items: [],
@@ -100,6 +126,17 @@ export function CartContextProvider({ children }) {
   const isLoggedIn = useSelector((state) => state.auth.isLoggedIn);
 
   useEffect(() => {
+    const localCart = loadCartFromLocalStorage();
+    if (Array.isArray(localCart.items) && localCart.items.length > 0) {
+      dispatchCartAction({ type: "SET_CART", items: localCart.items });
+    }
+  }, []);
+
+  useEffect(() => {
+    saveCartToLocalStorage(cart.items);
+  }, [cart.items]);
+
+  useEffect(() => {
     if (!isLoggedIn || !isCartLoaded) {
       return;
     }
@@ -118,7 +155,6 @@ export function CartContextProvider({ children }) {
   useEffect(() => {
     if (!isLoggedIn) {
       setIsCartLoaded(false);
-      dispatchCartAction({ type: "CLEAR_CART" });
       return;
     }
 
@@ -127,11 +163,25 @@ export function CartContextProvider({ children }) {
         const response = await axiosInstance.get("/api/cart");
         const savedCart = response.data.cart;
 
-        if (savedCart && Array.isArray(savedCart.items)) {
+        if (savedCart && Array.isArray(savedCart.items) && savedCart.items.length > 0) {
           dispatchCartAction({ type: "SET_CART", items: savedCart.items });
+        } else {
+          const localCart = loadCartFromLocalStorage();
+          if (Array.isArray(localCart.items) && localCart.items.length > 0) {
+            dispatchCartAction({ type: "SET_CART", items: localCart.items });
+            try {
+              await axiosInstance.post("/api/cart", { items: localCart.items });
+            } catch (error) {
+              console.error("Error syncing local cart to server:", error);
+            }
+          }
         }
       } catch (error) {
         console.error("Error loading cart:", error);
+        const localCart = loadCartFromLocalStorage();
+        if (Array.isArray(localCart.items) && localCart.items.length > 0) {
+          dispatchCartAction({ type: "SET_CART", items: localCart.items });
+        }
       } finally {
         setIsCartLoaded(true);
       }
