@@ -83,6 +83,7 @@ router.post("/login", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -216,6 +217,7 @@ router.post("/signup", async (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -471,12 +473,15 @@ router.get("/cart", authenticateToken, (req, res) => {
     const cartCookie = req.cookies.cart;
     const cartData = cartCookie ? JSON.parse(cartCookie) : null;
 
-    if (!cartData || cartData.userId !== req.user.sub) {
-      if (cartData && cartData.userId !== req.user.sub) {
+    const currentUserId = String(req.user.sub);
+
+    if (!cartData || String(cartData.userId) !== currentUserId) {
+      if (cartData && String(cartData.userId) !== currentUserId) {
         res.clearCookie("cart", {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           sameSite: "none",
+          path: "/",
         });
       }
       return res.status(200).json({ success: true, cart: { items: [] } });
@@ -496,7 +501,7 @@ router.post("/cart", authenticateToken, (req, res) => {
   try {
     const { items } = req.body;
     const cart = {
-      userId: req.user.sub,
+      userId: String(req.user.sub),
       items: Array.isArray(items) ? items : [],
     };
 
@@ -504,6 +509,7 @@ router.post("/cart", authenticateToken, (req, res) => {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "none",
+      path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -520,6 +526,7 @@ router.delete("/cart", authenticateToken, (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    path: "/",
   });
 
   res.status(200).json({ success: true, message: "Cart cleared" });
@@ -531,6 +538,7 @@ router.post("/logout", (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+    path: "/",
   });
 
   res.status(200).json({
