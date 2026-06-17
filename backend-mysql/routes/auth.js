@@ -82,7 +82,7 @@ router.post("/login", async (req, res) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -215,7 +215,7 @@ router.post("/signup", async (req, res) => {
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -337,47 +337,7 @@ router.put("/me", authenticateToken, async (req, res) => {
       updateData.password_hash = await bcrypt.hash(password, 10);
     }
 
-    // if (password) {
-    //   const hashedPassword = await bcrypt.hash(password, 10);
-    //   await pool.query(
-    //     "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ?, password_hash = ? WHERE customer_id = ?",
-    //     [
-    //       name,
-    //       email,
-    //       phone,
-    //       street,
-    //       city,
-    //       postal_code,
-    //       country,
-    //       hashedPassword,
-    //       userId,
-    //     ],
-    //   );
-    // } else {
-    //   await pool.query(
-    //     "UPDATE customers SET name = ?, email = ?, phone = ?, street = ?, city = ?, postal_code = ?, country = ? WHERE customer_id = ?",
-    //     [name, email, phone, street, city, postal_code, country, userId],
-    //   );
-    // }
-    // we update all fields that user can edit on the Account page (name, email, phone, street, city, postal_code, country, password)
-
-    const [rows] = await pool.query(
-      "SELECT customer_id, name, email, role, date_registered, phone, street, city, postal_code, country FROM customers WHERE customer_id = ?",
-      [userId],
-    );
-
-    // if (rows.length === 0) {
-    //   return res.status(404).json({
-    //     success: false,
-    //     message: "User not found",
-    //   });
-    // }
-
-    // res.status(200).json({
-    //   success: true,
-    //   data: rows[0],
-    // });
-
+    // Update user with Prisma
     await prisma.customer.update({
       where: { customer_id: userId },
       data: updateData,
@@ -516,7 +476,7 @@ router.get("/cart", authenticateToken, (req, res) => {
         res.clearCookie("cart", {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
-          sameSite: "strict",
+          sameSite: "none",
         });
       }
       return res.status(200).json({ success: true, cart: { items: [] } });
@@ -543,7 +503,7 @@ router.post("/cart", authenticateToken, (req, res) => {
     res.cookie("cart", JSON.stringify(cart), {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
+      sameSite: "none",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -559,18 +519,14 @@ router.delete("/cart", authenticateToken, (req, res) => {
   res.clearCookie("cart", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
-  });
-
-  res.status(200).json({ success: true, message: "Cart cleared" });
-});
+    sameSite: "none",
 
 // 17th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
 router.post("/logout", (req, res) => {
   res.clearCookie("refreshToken", {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "strict",
+    sameSite: "none",
   });
 
   res.status(200).json({
