@@ -520,6 +520,10 @@ router.delete("/cart", authenticateToken, (req, res) => {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "none",
+  });
+
+  res.status(200).json({ success: true, message: "Cart cleared" });
+});
 
 // 17th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
 router.post("/logout", (req, res) => {
