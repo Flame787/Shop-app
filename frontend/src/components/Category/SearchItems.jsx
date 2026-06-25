@@ -27,8 +27,7 @@ export default function SearchItems({
     queryKey: ["items", searchWord, sortCriteria],
     queryFn: async () => {
       const res = await axios.get(
-        // `${process.env.REACT_APP_API_URL}/api/search/items?query=${trimmedQuery}`
-        `${process.env.REACT_APP_API_URL}/api/search/items`,
+        `${process.env.REACT_APP_API_URL}/api/items/search/items`,
         {
           params: {
             query: trimmedQuery,
