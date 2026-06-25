@@ -672,9 +672,9 @@ router.get("/search/items", async (req, res) => {
     const items = await prisma.item.findMany({
       where: {
         OR: [
-          { name: { contains: searchWord, mode: "insensitive" } },
-          { description: { contains: searchWord, mode: "insensitive" } },
-          { tags: { contains: searchWord, mode: "insensitive" } },
+          { name: { contains: searchWord } },
+          { description: { contains: searchWord } },
+          { tags: { contains: searchWord } },
         ],
       },
       orderBy,
