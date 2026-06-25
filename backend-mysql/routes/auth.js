@@ -79,10 +79,11 @@ router.post("/login", async (req, res) => {
       { expiresIn: "7d" },
     );
 
+    const isHttps = req.headers['x-forwarded-proto'] === 'https' || process.env.NODE_ENV === 'production';
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      secure: isHttps,
+      sameSite: isHttps ? "none" : "lax",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -213,10 +214,11 @@ router.post("/signup", async (req, res) => {
       { expiresIn: "7d" },
     );
 
+    const isHttps = req.headers['x-forwarded-proto'] === 'https' || process.env.NODE_ENV === 'production';
     res.cookie("refreshToken", refreshToken, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "none",
+      secure: isHttps,
+      sameSite: isHttps ? "none" : "lax",
       path: "/",
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
@@ -522,10 +524,11 @@ router.delete("/cart", authenticateToken, async (req, res) => {
 
 // 17th API: POST - LOGOUT - clears the refreshToken httpOnly cookie:
 router.post("/logout", (req, res) => {
+  const isHttps = req.headers['x-forwarded-proto'] === 'https' || process.env.NODE_ENV === 'production';
   res.clearCookie("refreshToken", {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
+    secure: isHttps,
+    sameSite: isHttps ? "none" : "lax",
     path: "/",
   });
 
